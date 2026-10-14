@@ -1,0 +1,3635 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>APO BPR RAD Portfolio Dashboard (Editable)</title>
+    <style>
+        :root {
+            /* Apple Standard Light Colors */
+            --text-primary: #1D1D1F;
+            --text-secondary: #6E6E73;
+            --text-tertiary: #86868B;
+            --text-interactive: #0066CC;
+            --text-error: #FF3B30;
+            
+            --bg-primary: #FFFFFF;
+            --bg-secondary: #FBFBFD;
+            --bg-tertiary: #F5F5F7;
+            --border-secondary: rgba(0, 0, 0, 0.08);
+            --border-primary: rgba(0, 0, 0, 0.15);
+            
+            --status-progress: #007AFF;
+            --status-hold: #FF9500;
+            --status-complete: #34C759;
+            --status-pending: #8E8E93;
+            
+            --font-text: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", sans-serif;
+            
+            --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+            --shadow-md: 0 4px 12px rgba(0,0,0,0.04);
+            --shadow-lg: 0 12px 32px rgba(0,0,0,0.06);
+            --shadow-xl: 0 20px 48px rgba(0,0,0,0.1);
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                /* Apple Standard Dark Colors */
+                --text-primary: #F5F5F7;
+                --text-secondary: #86868B;
+                --text-tertiary: #6E6E73;
+                --text-interactive: #2997FF;
+                --text-error: #FF453A;
+                
+                --bg-primary: #161617;
+                --bg-secondary: #1D1D1F;
+                --bg-tertiary: #000000;
+                --border-secondary: rgba(255, 255, 255, 0.08);
+                --border-primary: rgba(255, 255, 255, 0.15);
+                
+                --shadow-sm: 0 1px 2px rgba(0,0,0,0.2);
+                --shadow-md: 0 4px 12px rgba(0,0,0,0.15);
+                --shadow-lg: 0 12px 32px rgba(0,0,0,0.2);
+                --shadow-xl: 0 20px 48px rgba(0,0,0,0.3);
+            }
+        }
+
+        body {
+            font-family: var(--font-text);
+            background-color: var(--bg-tertiary);
+            color: var(--text-primary);
+            margin: 0;
+            padding: 32px;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            text-rendering: optimizeLegibility;
+            overflow-x: hidden; /* Prevent body horizontal scrolling */
+        }
+
+        /* Apple-style Page Header */
+        .dashboard-header {
+            margin-bottom: 32px;
+            border-bottom: 1px solid var(--border-secondary);
+            padding-bottom: 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .dashboard-header-text h1 {
+            font-size: 32px;
+            font-weight: 700;
+            margin: 0 0 6px 0;
+            letter-spacing: -0.022em;
+        }
+
+        .dashboard-header-text p {
+            color: var(--text-secondary);
+            margin: 0;
+            font-size: 15px;
+            font-weight: 400;
+            letter-spacing: -0.01em;
+        }
+
+        .filter-toggle-container {
+            background-color: var(--bg-primary);
+            border: 1px solid var(--border-secondary);
+            padding: 8px 16px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            box-shadow: var(--shadow-sm);
+            user-select: none;
+            transition: all 0.2s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+        
+        .filter-toggle-container:hover {
+            border-color: var(--text-interactive);
+            background-color: var(--bg-secondary);
+        }
+
+        .filter-toggle-container input {
+            cursor: pointer;
+            accent-color: var(--text-interactive);
+        }
+
+        /* Modern Apple Widgets (Stats Cards) */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 24px;
+            margin-bottom: 32px;
+        }
+
+        .stat-card {
+            background-color: var(--bg-primary);
+            border: 1px solid var(--border-secondary);
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: var(--shadow-sm);
+            transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+            border-color: var(--border-primary);
+        }
+
+        .stat-card .label {
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-secondary);
+            margin-bottom: 12px;
+        }
+
+        .stat-card .value {
+            font-size: 40px;
+            font-weight: 700;
+            letter-spacing: -0.03em;
+            margin: 0;
+            color: var(--text-primary);
+            line-height: 1;
+        }
+
+        /* Apple Segmented Control Bar */
+        .control-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            border-bottom: 1px solid var(--border-secondary);
+            padding-bottom: 16px;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        /* iOS/macOS Segmented Control styling */
+        .control-bar-left {
+            display: inline-flex;
+            background-color: var(--bg-secondary);
+            border: 1px solid var(--border-secondary);
+            padding: 4px;
+            border-radius: 12px;
+            gap: 2px;
+            box-shadow: inset 0 1px 2px rgba(0,0,0,0.01);
+        }
+
+        .tab-btn {
+            background: none;
+            border: none;
+            font-family: var(--font-text);
+            font-size: 13px;
+            font-weight: 500;
+            padding: 6px 14px;
+            border-radius: 8px;
+            cursor: pointer;
+            color: var(--text-secondary);
+            transition: all 0.2s cubic-bezier(0.25, 1, 0.5, 1);
+            user-select: none;
+        }
+
+        .tab-btn.active {
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            box-shadow: var(--shadow-sm), 0 4px 10px rgba(0,0,0,0.02);
+            font-weight: 600;
+        }
+
+        .tab-btn:hover:not(.active) {
+            color: var(--text-primary);
+            background-color: rgba(0,0,0,0.03);
+        }
+        
+        @media (prefers-color-scheme: dark) {
+            .tab-btn:hover:not(.active) {
+                background-color: rgba(255,255,255,0.05);
+            }
+        }
+
+        .control-bar-right {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        /* Buttons styling */
+        .action-btn {
+            background-color: var(--text-interactive);
+            color: #FFFFFF;
+            border: none;
+            font-family: var(--font-text);
+            font-size: 13px;
+            font-weight: 500;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            transition: all 0.15s ease;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .action-btn:hover {
+            filter: brightness(1.05);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .action-btn:active {
+            filter: brightness(0.95);
+        }
+
+        .action-btn.secondary {
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            border: 1px solid var(--border-secondary);
+        }
+
+        .action-btn.secondary:hover {
+            background-color: var(--bg-secondary);
+            border-color: var(--border-primary);
+        }
+
+        /* Modern Table Card Container */
+        .project-table-container {
+            background-color: var(--bg-primary);
+            border: 1px solid var(--border-secondary);
+            border-radius: 16px;
+            overflow-x: auto; /* Enable internal horizontal scrolling */
+            max-width: 100%;  /* Prevent the card from exceeding the screen width */
+            box-shadow: var(--shadow-md);
+            margin-bottom: 40px;
+            transition: border-color 0.3s ease;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        table {
+            width: 100%;
+            min-width: 1200px; /* Ensure columns have comfortable breathing space */
+            border-collapse: collapse;
+            text-align: left;
+        }
+
+        th {
+            background-color: var(--bg-secondary);
+            color: var(--text-secondary);
+            font-weight: 600;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.07em;
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border-secondary);
+            user-select: none;
+        }
+
+        td {
+            padding: 18px 20px;
+            border-bottom: 1px solid var(--border-secondary);
+            font-size: 14px;
+            color: var(--text-primary);
+            vertical-align: middle;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tr:hover td {
+            background-color: var(--bg-secondary);
+        }
+
+        /* Status Badge Styling */
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.25, 1, 0.5, 1);
+            border: 1px solid transparent;
+        }
+
+        .status-badge:hover {
+            transform: scale(1.03);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .status-badge:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.3);
+            background-color: var(--bg-primary) !important;
+            color: var(--text-primary) !important;
+        }
+
+        .track-tag {
+            background-color: var(--bg-tertiary);
+            border: 1px solid var(--border-secondary);
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+        }
+
+        /* Timeline Layout with gorgeous Apple-style transitions */
+        .timeline-wrapper {
+            display: flex;
+            align-items: center;
+            width: 100%;
+            max-width: 680px;
+            padding: 16px 0;
+            position: relative;
+        }
+
+        tr:hover {
+            position: relative;
+            z-index: 50; /* Bring the hovered row to the front to keep tooltips on top */
+        }
+
+        .timeline-line {
+            position: absolute;
+            top: 22px; /* Center-aligned with the 12px height dot */
+            left: 24px;
+            right: 24px;
+            height: 2px;
+            background-color: var(--border-secondary);
+            transform: translateY(-50%);
+            z-index: 1;
+        }
+
+        .timeline-steps-container {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            z-index: 2;
+        }
+
+        .timeline-step {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+            background: none;
+            width: 84px;
+            transition: all 0.2s ease;
+        }
+
+        .timeline-step:hover {
+            z-index: 100; /* Ensure tooltip sits on top of adjacent dots of the same row */
+        }
+
+        .timeline-dot {
+            width: 12px;
+            height: 12px;
+            touch-action: none;
+            border-radius: 50%;
+            background-color: var(--bg-primary);
+            border: 2px solid var(--border-secondary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s cubic-bezier(0.25, 1, 0.5, 1);
+            box-sizing: border-box;
+            position: relative;
+        }
+
+        .timeline-step.completed-stage .timeline-dot {
+            background-color: var(--text-secondary) !important;
+            border-color: var(--text-secondary) !important;
+        }
+
+        .timeline-step.future-stage .timeline-dot {
+            background-color: var(--bg-primary) !important;
+            border-color: var(--border-secondary) !important;
+        }
+
+        .timeline-step.key-highlight .timeline-dot {
+            background-color: var(--status-progress) !important;
+            border-color: var(--status-progress) !important;
+            box-shadow: 0 0 0 4px rgba(0, 122, 255, 0.2) !important;
+            transform: scale(1.1);
+        }
+
+        .timeline-step.key-highlight.stage-it .timeline-dot,
+        .timeline-step.key-highlight.stage-uat .timeline-dot {
+            background-color: var(--status-hold) !important;
+            border-color: var(--status-hold) !important;
+            box-shadow: 0 0 0 4px rgba(255, 149, 0, 0.2) !important;
+        }
+
+        .timeline-step.key-highlight.stage-design .timeline-dot {
+            background-color: #7C3AED !important;
+            border-color: #7C3AED !important;
+            box-shadow: 0 0 0 4px rgba(124, 58, 237, 0.2) !important;
+        }
+
+        .timeline-step.key-highlight.status-on-hold-timeline .timeline-dot {
+            background-color: var(--text-secondary) !important;
+            border-color: var(--text-secondary) !important;
+            box-shadow: 0 0 0 4px rgba(110, 110, 115, 0.2) !important;
+        }
+
+        .timeline-dot::after {
+            content: '';
+            width: 4px;
+            height: 4px;
+            border-radius: 50%;
+            background-color: #FFFFFF;
+            display: none;
+        }
+
+        .timeline-step.key-highlight .timeline-dot::after {
+            display: block;
+        }
+
+        .timeline-label {
+            font-size: 10px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            margin-top: 8px;
+            letter-spacing: 0.05em;
+            text-align: center;
+            transition: color 0.2s ease;
+        }
+
+        .timeline-step.active .timeline-label {
+            color: var(--text-primary);
+        }
+
+        .timeline-step.key-highlight .timeline-label {
+            color: var(--status-progress) !important;
+            font-weight: 700 !important;
+        }
+
+        .timeline-step.key-highlight.stage-it .timeline-label,
+        .timeline-step.key-highlight.stage-uat .timeline-label {
+            color: var(--status-hold) !important;
+        }
+
+        .timeline-step.key-highlight.stage-design .timeline-label {
+            color: #7C3AED !important;
+        }
+
+        /* Beautiful Dates inside Timeline Pills */
+        .timeline-time-sub {
+            font-size: 9px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-top: 6px;
+            background-color: var(--bg-secondary);
+            padding: 3px 8px;
+            border-radius: 10px;
+            border: 1px solid var(--border-secondary);
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.25, 1, 0.5, 1);
+            min-width: 36px;
+            text-align: center;
+            display: inline-block;
+            user-select: none;
+        }
+
+        .timeline-time-sub:hover {
+            transform: scale(1.05);
+            border-color: var(--border-primary);
+            color: var(--text-primary);
+        }
+
+        .timeline-time-sub:focus {
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(0, 102, 204, 0.3);
+            background-color: var(--bg-primary) !important;
+            color: var(--text-primary) !important;
+        }
+
+        .timeline-time-sub.empty-date {
+            opacity: 0.35;
+            border-style: dashed;
+            background: none;
+        }
+
+        .timeline-time-sub.empty-date:hover {
+            opacity: 0.8;
+            border-style: solid;
+        }
+
+        .timeline-step.key-highlight .timeline-time-sub {
+            background-color: var(--text-interactive) !important;
+            color: #FFFFFF !important;
+            border-color: var(--text-interactive) !important;
+        }
+
+        .timeline-step.key-highlight.stage-it .timeline-time-sub,
+        .timeline-step.key-highlight.stage-uat .timeline-time-sub {
+            background-color: var(--status-hold) !important;
+            color: #FFFFFF !important;
+            border-color: var(--status-hold) !important;
+        }
+
+        .timeline-step.key-highlight.stage-design .timeline-time-sub {
+            background-color: #7C3AED !important;
+            color: #FFFFFF !important;
+            border-color: #7C3AED !important;
+        }
+
+        .timeline-step.key-highlight.status-on-hold-timeline .timeline-time-sub {
+            background-color: var(--text-secondary) !important;
+            color: #FFFFFF !important;
+            border-color: var(--text-secondary) !important;
+        }
+
+        /* Tooltips */
+        .timeline-tooltip {
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            margin-bottom: 8px;
+            background-color: var(--text-primary);
+            color: var(--bg-primary);
+            font-size: 10px;
+            font-weight: 600;
+            padding: 6px 10px;
+            border-radius: 8px;
+            white-space: nowrap;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.15s cubic-bezier(0.25, 1, 0.5, 1);
+            box-shadow: var(--shadow-md);
+            z-index: 10;
+            pointer-events: none; /* Avoid blocking pointer/mouse events while dragging */
+        }
+
+        .timeline-step:hover .timeline-tooltip {
+            opacity: 1;
+            visibility: visible;
+            margin-bottom: 12px;
+        }
+
+        .section-title {
+            font-size: 20px;
+            font-weight: 600;
+            margin: 36px 0 18px 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            letter-spacing: -0.01em;
+        }
+
+        /* Inputs & Filters Form Elements */
+        .column-filter-input, .column-filter-select {
+            width: 100%;
+            background-color: var(--bg-primary);
+            border: 1px solid var(--border-secondary);
+            border-radius: 8px;
+            padding: 6px 10px;
+            font-family: var(--font-text);
+            font-size: 12px;
+            color: var(--text-primary);
+            outline: none;
+            box-sizing: border-box;
+            font-weight: 500;
+            transition: all 0.2s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+
+        .column-filter-input:focus, .column-filter-select:focus {
+            border-color: var(--text-interactive);
+            box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.15);
+            background-color: var(--bg-primary);
+        }
+
+        .filter-row th {
+            padding: 8px 12px 14px 12px !important;
+            background-color: var(--bg-secondary);
+            border-bottom: 2px solid var(--border-secondary);
+        }
+
+        /* Custom Multi-select Dropdown styling */
+        .multiselect-container {
+            position: relative;
+            display: inline-block;
+            width: 100%;
+        }
+
+        .multiselect-btn {
+            width: 100%;
+            background-color: var(--bg-primary);
+            border: 1px solid var(--border-secondary);
+            border-radius: 8px;
+            padding: 6px 10px;
+            font-family: var(--font-text);
+            font-size: 12px;
+            color: var(--text-primary);
+            text-align: left;
+            outline: none;
+            box-sizing: border-box;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.25, 1, 0.5, 1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .multiselect-btn::after {
+            content: '';
+            width: 0;
+            height: 0;
+            border-left: 4px solid transparent;
+            border-right: 4px solid transparent;
+            border-top: 4.5px solid var(--text-secondary);
+            margin-left: 6px;
+            display: inline-block;
+            transition: transform 0.2s ease;
+        }
+
+        .multiselect-container:focus-within .multiselect-btn {
+            border-color: var(--text-interactive);
+            box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.15);
+        }
+
+        .multiselect-popover {
+            position: absolute;
+            top: calc(100% + 6px);
+            left: 0;
+            right: 0;
+            background-color: var(--bg-primary);
+            border: 1px solid var(--border-secondary);
+            border-radius: 12px;
+            padding: 8px 0;
+            box-shadow: var(--shadow-lg);
+            z-index: 100;
+            display: none;
+            max-height: 220px;
+            overflow-y: auto;
+            text-align: left;
+        }
+
+        .multiselect-popover.show {
+            display: block;
+            animation: popoverFade 0.2s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+
+        @keyframes popoverFade {
+            from { opacity: 0; transform: translateY(-4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .multiselect-option {
+            padding: 8px 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 12px;
+            cursor: pointer;
+            user-select: none;
+            transition: background-color 0.15s;
+        }
+
+        .multiselect-option:hover {
+            background-color: var(--bg-secondary);
+        }
+
+        .multiselect-option input[type="checkbox"] {
+            margin: 0;
+            cursor: pointer;
+            accent-color: var(--text-interactive);
+        }
+
+        .multiselect-option label {
+            margin: 0;
+            cursor: pointer;
+            color: var(--text-primary);
+            font-weight: 500;
+            flex-grow: 1;
+        }
+
+        /* PM & Dev Cells Inline Editable Styling */
+        .pm-cell {
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-primary);
+            cursor: pointer;
+            padding: 6px 10px;
+            border-radius: 8px;
+            border: 1px solid transparent;
+            display: inline-block;
+            transition: all 0.2s ease;
+            max-width: 140px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .pm-cell:hover {
+            background-color: var(--bg-secondary);
+            border-color: var(--border-secondary);
+        }
+
+        .pm-cell:focus {
+            outline: none;
+            background-color: var(--bg-primary);
+            border-color: var(--text-interactive);
+            box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.15);
+            max-width: none;
+            white-space: normal;
+        }
+
+        .section-count {
+            background-color: var(--bg-secondary);
+            color: var(--text-secondary);
+            border: 1px solid var(--border-secondary);
+            font-size: 11px;
+            font-weight: 600;
+            padding: 3px 10px;
+            border-radius: 12px;
+        }
+
+        /* Subtle Delete Action Button */
+        .delete-project-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: var(--text-secondary);
+            opacity: 0;
+            transition: all 0.2s ease;
+            padding: 6px;
+            border-radius: 8px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        tr:hover .delete-project-btn {
+            opacity: 0.5;
+        }
+
+        .delete-project-btn:hover {
+            opacity: 1 !important;
+            color: var(--text-error) !important;
+            background-color: rgba(255, 59, 48, 0.1) !important;
+        }
+
+        /* Translucent Toast feedback */
+        .toast-notification {
+            position: fixed;
+            bottom: 32px;
+            right: 32px;
+            background-color: rgba(29, 29, 31, 0.85);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            color: #FFFFFF;
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 500;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(12px);
+            transition: all 0.35s cubic-bezier(0.25, 1, 0.5, 1);
+            z-index: 1000;
+            box-shadow: var(--shadow-xl);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .toast-notification.show {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        /* Perfect Apple-style Backdrop & Modal Dialog */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0,0,0,0.3);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+
+        .modal-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-drawer {
+            background-color: var(--bg-primary);
+            border: 1px solid var(--border-secondary);
+            border-radius: 20px;
+            width: 100%;
+            max-width: 600px;
+            padding: 28px;
+            box-shadow: var(--shadow-xl);
+            transform: scale(0.95);
+            transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+
+        .modal-overlay.show .modal-drawer {
+            transform: scale(1);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            border-bottom: 1px solid var(--border-secondary);
+            padding-bottom: 16px;
+        }
+
+        .modal-header h2 {
+            margin: 0;
+            font-size: 22px;
+            font-weight: 700;
+            letter-spacing: -0.015em;
+        }
+
+        .close-drawer-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 6px;
+            border-radius: 50%;
+            transition: background-color 0.2s, color 0.2s;
+        }
+
+        .close-drawer-btn:hover {
+            background-color: var(--bg-secondary);
+            color: var(--text-primary);
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 28px;
+        }
+
+        .form-field {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .form-field.full-width {
+            grid-column: span 2;
+        }
+
+        .form-field label {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .form-field input, .form-field select {
+            background-color: var(--bg-secondary);
+            border: 1px solid var(--border-secondary);
+            border-radius: 8px;
+            padding: 10px 14px;
+            font-family: var(--font-text);
+            font-size: 14px;
+            color: var(--text-primary);
+            outline: none;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .form-field input:focus, .form-field select:focus {
+            border-color: var(--text-interactive);
+            box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.15);
+            background-color: var(--bg-primary);
+        }
+
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            border-top: 1px solid var(--border-secondary);
+            padding-top: 20px;
+        }
+
+    </style>
+    <script>
+        // Default projects data from Excel parsing
+        const defaultProjects = [
+    {
+        "name": "Charter portal enhancement",
+        "track": "Logistics",
+        "pm": "Wayne",
+        "roi": "",
+        "priority": "\u2014",
+        "npi": "No",
+        "status": "Completed",
+        "status_detail": "Live - Under PVT",
+        "status_color": null,
+        "sheet": "New & Enhancement",
+        "callout": "",
+        "timeline": {
+            "requirements": "Jul W2",
+            "design": "Jul W3",
+            "development": "Jul W4",
+            "it": "Jul W5",
+            "uat": "Jul W5",
+            "golive": "Aug W1"
+        },
+        "completed_last_week": false,
+        "dev": "Jack"
+    },
+    {
+        "name": "Daily Bread",
+        "track": "Logistics",
+        "pm": "Wayne",
+        "roi": "",
+        "priority": "\u2014",
+        "npi": "No",
+        "status": "Completed",
+        "status_detail": "Live - Under PVT",
+        "status_color": null,
+        "sheet": "New & Enhancement",
+        "callout": "",
+        "timeline": {
+            "requirements": "Jul W2",
+            "design": "Jul W5",
+            "development": "\u2014",
+            "it": "\u2014",
+            "uat": "\u2014",
+            "golive": "\u2014"
+        },
+        "completed_last_week": false,
+        "dev": "IS&T"
+    },
+    {
+        "name": "PEAK Launch Dashboard (Target Overview)",
+        "track": "CSDM/SDE",
+        "pm": "Shuge",
+        "roi": "",
+        "priority": "\u2014",
+        "npi": "No",
+        "status": "Completed",
+        "status_detail": "Go-Live",
+        "status_color": null,
+        "sheet": "New & Enhancement",
+        "callout": "",
+        "timeline": {
+            "requirements": "Sep W1",
+            "design": "Sep W4",
+            "development": "Oct W2",
+            "it": "Oct W2",
+            "uat": "Oct W3",
+            "golive": "Oct W3"
+        },
+        "completed_last_week": false,
+        "dev": "Ellie, Tracy, Emily"
+    },
+    {
+        "name": "PEAK Launch Dashboard (Daily TDM)",
+        "track": "CSDM/SDE",
+        "pm": "Shuge",
+        "roi": "",
+        "priority": "\u2014",
+        "npi": "No",
+        "status": "Completed",
+        "status_detail": "Go-Live - Post Go-live Suppport",
+        "status_color": null,
+        "sheet": "New & Enhancement",
+        "callout": "",
+        "timeline": {
+            "requirements": "Sep W1",
+            "design": "Sep W4",
+            "development": "Oct W2",
+            "it": "Oct W2",
+            "uat": "Oct W3",
+            "golive": "Oct W3"
+        },
+        "completed_last_week": false,
+        "dev": "Tracy, Emily"
+    },
+    {
+        "name": "PEAK Launch Dashboard (D0D1)",
+        "track": "CSDM/SDE",
+        "pm": "Stoney",
+        "roi": "",
+        "priority": "\u2014",
+        "npi": "No",
+        "status": "Completed",
+        "status_detail": "Go-Live",
+        "status_color": null,
+        "sheet": "New & Enhancement",
+        "callout": "",
+        "timeline": {
+            "requirements": "Sep W1",
+            "design": "Sep W4",
+            "development": "Oct W2",
+            "it": "Oct W2",
+            "uat": "Oct W3",
+            "golive": "Oct W3"
+        },
+        "completed_last_week": false,
+        "dev": "Tracy, Emily, Joe Yang"
+    },
+    {
+        "name": "PEAK Daily TDM (Execution-PODN)",
+        "track": "CSDM/SDE",
+        "pm": "Stoney",
+        "roi": "",
+        "priority": "\u2014",
+        "npi": "No",
+        "status": "Completed",
+        "status_detail": "Go-Live",
+        "status_color": null,
+        "sheet": "New & Enhancement",
+        "callout": "",
+        "timeline": {
+            "requirements": "Sep W1",
+            "design": "Sep W4",
+            "development": "Oct W2",
+            "it": "Oct W2",
+            "uat": "Oct W3",
+            "golive": "Oct W3"
+        },
+        "completed_last_week": false,
+        "dev": "Tracy, Emily, Joe Yang"
+    },
+    {
+        "name": "Inv 846 Enhancement",
+        "track": "CSDM/SDE",
+        "pm": "Ting",
+        "roi": "",
+        "priority": "\u2014",
+        "npi": "No",
+        "status": "Completed",
+        "status_detail": "Go-Live",
+        "status_color": null,
+        "sheet": "New & Enhancement",
+        "callout": "",
+        "timeline": {
+            "requirements": "\u2014",
+            "design": "\u2014",
+            "development": "Aug W1",
+            "it": "Aug W1",
+            "uat": "Aug W3",
+            "golive": "Aug W4"
+        },
+        "completed_last_week": false,
+        "dev": "Scholar, Zoya"
+    },
+    {
+        "name": "PEAK APR PP2.5 Enhancement",
+        "track": "CSDM/SDE",
+        "pm": "Ting",
+        "roi": "",
+        "priority": "\u2014",
+        "npi": "No",
+        "status": "Completed",
+        "status_detail": "Plan to Go-Live",
+        "status_color": null,
+        "sheet": "New & Enhancement",
+        "callout": "",
+        "timeline": {
+            "requirements": "\u2014",
+            "design": "\u2014",
+            "development": "Aug W1",
+            "it": "Aug W1",
+            "uat": "Aug W3",
+            "golive": "Aug W4"
+        },
+        "completed_last_week": false,
+        "dev": "Ting / Shuge, Scholar, Zoya"
+    },
+    {
+        "name": "SCO",
+        "track": "CSDM/SDE",
+        "pm": "Ting",
+        "roi": "",
+        "priority": "\u2014",
+        "npi": "No",
+        "status": "Completed",
+        "status_detail": "Go-Live",
+        "status_color": null,
+        "sheet": "New & Enhancement",
+        "callout": "",
+        "timeline": {
+            "requirements": "Jun W4",
+            "design": "Jul W2",
+            "development": "Jul W4",
+            "it": "Aug W3",
+            "uat": "Aug W3",
+            "golive": "Sep W1"
+        },
+        "completed_last_week": false,
+        "dev": "Scholar, Zoya"
+    },
+    {
+        "name": "Color Flip FY26",
+        "track": "MD",
+        "pm": "Lily",
+        "roi": "",
+        "priority": "\u2014",
+        "npi": "No",
+        "status": "Completed",
+        "status_detail": "Go-Live",
+        "status_color": null,
+        "sheet": "New & Enhancement",
+        "callout": "",
+        "timeline": {
+            "requirements": "Jul W4",
+            "design": "Aug W2",
+            "development": "Sep W1",
+            "it": "Sep W1",
+            "uat": "Sep W2",
+            "golive": "Sep W2"
+        },
+        "completed_last_week": false,
+        "dev": "BE"
+    },
+    {
+        "name": "ODIP_WIP Phase I",
+        "track": "OPM",
+        "pm": "Zoe/Yinbo",
+        "roi": "",
+        "priority": "\u2014",
+        "npi": "No",
+        "status": "In Progress",
+        "status_detail": "Dev in progress, target Oct wk4 UAT",
+        "status_color": null,
+        "sheet": "New & Enhancement",
+        "callout": "",
+        "timeline": {
+            "requirements": "\u2014",
+            "design": "\u2014",
+            "development": "\u2014",
+            "it": "\u2014",
+            "uat": "\u2014",
+            "golive": "\u2014"
+        },
+        "completed_last_week": false,
+        "dev": "UIUX, FE, BE"
+    },
+    {
+        "name": "ODIP_WIP Phase II",
+        "track": "OPM",
+        "pm": "Zoe/Yinbo",
+        "roi": "",
+        "priority": "\u2014",
+        "npi": "No",
+        "status": "In Progress",
+        "status_detail": "POC 09/18 version SN list validate in progress",
+        "status_color": null,
+        "sheet": "New & Enhancement",
+        "callout": "",
+        "timeline": {
+            "requirements": "\u2014",
+            "design": "\u2014",
+            "development": "\u2014",
+            "it": "\u2014",
+            "uat": "\u2014",
+            "golive": "\u2014"
+        },
+        "completed_last_week": false,
+        "dev": "UIUX, FE, BE, Aerik"
+    },
+    {
+        "name": "ODIP Space Plan",
+        "track": "OPM",
+        "pm": "Zoe",
+        "roi": "",
+        "priority": "\u2014",
+        "npi": "No",
+        "status": "Pending",
+        "status_detail": "UAT sign-off",
+        "status_color": null,
+        "sheet": "New & Enhancement",
+        "callout": "",
+        "timeline": {
+            "requirements": "\u2014",
+            "design": "\u2014",
+            "development": "\u2014",
+            "it": "\u2014",
+            "uat": "\u2014",
+            "golive": "\u2014"
+        },
+        "completed_last_week": false,
+        "dev": "Zoe/Yinbo, UIUX, Emily, Aerik"
+    },
+    {
+        "name": "ODIP MCOO",
+        "track": "OPM",
+        "pm": "Echo/Yinbo",
+        "roi": "",
+        "priority": "\u2014",
+        "npi": "No",
+        "status": "In Progress",
+        "status_detail": "UAT in progress",
+        "status_color": null,
+        "sheet": "New & Enhancement",
+        "callout": "",
+        "timeline": {
+            "requirements": "\u2014",
+            "design": "\u2014",
+            "development": "\u2014",
+            "it": "\u2014",
+            "uat": "\u2014",
+            "golive": "\u2014"
+        },
+        "completed_last_week": false,
+        "dev": "UIUX, FE, BE"
+    },
+    {
+        "name": "ODIP Data Integration",
+        "track": "OPM",
+        "pm": "Crystal/Yinbo",
+        "roi": "",
+        "priority": "\u2014",
+        "npi": "No",
+        "status": "Pending",
+        "status_detail": "IOS,MCOO UAT",
+        "status_color": null,
+        "sheet": "New & Enhancement",
+        "callout": "",
+        "timeline": {
+            "requirements": "\u2014",
+            "design": "\u2014",
+            "development": "Apr W3",
+            "it": "Apr W3",
+            "uat": "Apr W4",
+            "golive": "Apr W4"
+        },
+        "completed_last_week": false,
+        "dev": "Zelin"
+    },
+    {
+        "name": "ODIP Capacity",
+        "track": "OPM",
+        "pm": "Echo/Yinbo/Zoe",
+        "roi": "",
+        "priority": "\u2014",
+        "npi": "No",
+        "status": "In Progress",
+        "status_detail": "CAPIO Mac Dev in progress, target Oct wk4",
+        "status_color": null,
+        "sheet": "New & Enhancement",
+        "callout": "",
+        "timeline": {
+            "requirements": "\u2014",
+            "design": "\u2014",
+            "development": "\u2014",
+            "it": "\u2014",
+            "uat": "\u2014",
+            "golive": "\u2014"
+        },
+        "completed_last_week": false,
+        "dev": "UIUX, FE, BE"
+    },
+    {
+        "name": "ODIP Avail",
+        "track": "OPM",
+        "pm": "Lily/Yinbo",
+        "roi": "",
+        "priority": "\u2014",
+        "npi": "No",
+        "status": "In Progress",
+        "status_detail": "Dev in progress",
+        "status_color": null,
+        "sheet": "New & Enhancement",
+        "callout": "",
+        "timeline": {
+            "requirements": "\u2014",
+            "design": "\u2014",
+            "development": "\u2014",
+            "it": "\u2014",
+            "uat": "\u2014",
+            "golive": "\u2014"
+        },
+        "completed_last_week": false,
+        "dev": "Linxi"
+    },
+    {
+        "name": "ODIP  OPS Metrics",
+        "track": "OPM",
+        "pm": "Echo/Yinbo/Zoe",
+        "roi": "",
+        "priority": "\u2014",
+        "npi": "No",
+        "status": "In Progress",
+        "status_detail": "Dev in queue",
+        "status_color": null,
+        "sheet": "New & Enhancement",
+        "callout": "",
+        "timeline": {
+            "requirements": "\u2014",
+            "design": "\u2014",
+            "development": "\u2014",
+            "it": "\u2014",
+            "uat": "\u2014",
+            "golive": "\u2014"
+        },
+        "completed_last_week": false,
+        "dev": "UIUX, FE, BE"
+    },
+    {
+        "name": "ODIP DL attendence",
+        "track": "OPM",
+        "pm": "Echo/Yinbo/Zoe",
+        "roi": "",
+        "priority": "\u2014",
+        "npi": "No",
+        "status": "In Progress",
+        "status_detail": "Dev in queue",
+        "status_color": null,
+        "sheet": "New & Enhancement",
+        "callout": "",
+        "timeline": {
+            "requirements": "\u2014",
+            "design": "\u2014",
+            "development": "\u2014",
+            "it": "\u2014",
+            "uat": "\u2014",
+            "golive": "\u2014"
+        },
+        "completed_last_week": false,
+        "dev": "UIUX, FE, BE"
+    },
+    {
+        "name": "ODIP Central Data re-org",
+        "track": "OPM",
+        "pm": "Echo/Yinbo/Zoe",
+        "roi": "",
+        "priority": "\u2014",
+        "npi": "No",
+        "status": "In Progress",
+        "status_detail": "Dev in Progress",
+        "status_color": null,
+        "sheet": "New & Enhancement",
+        "callout": "",
+        "timeline": {
+            "requirements": "\u2014",
+            "design": "\u2014",
+            "development": "Apr W3",
+            "it": "Apr W3",
+            "uat": "Apr W4",
+            "golive": "Apr W4"
+        },
+        "completed_last_week": false,
+        "dev": "UIUX, FE, BE"
+    },
+    {
+        "name": "ODIP IOS Enhancement",
+        "track": "OPM",
+        "pm": "Echo/Yinbo/Zoe",
+        "roi": "",
+        "priority": "\u2014",
+        "npi": "No",
+        "status": "Completed",
+        "status_detail": "Go-Live - 9/10",
+        "status_color": null,
+        "sheet": "New & Enhancement",
+        "callout": "",
+        "timeline": {
+            "requirements": "\u2014",
+            "design": "\u2014",
+            "development": "Aug W1",
+            "it": "Aug W1",
+            "uat": "Aug W3",
+            "golive": "Aug W4"
+        },
+        "completed_last_week": false,
+        "dev": "UIUX, FE, BE"
+    },
+    {
+        "name": "ODIP IOS EDI solution",
+        "track": "OPM",
+        "pm": "\u2014",
+        "roi": "",
+        "priority": "\u2014",
+        "npi": "No",
+        "status": "In Progress",
+        "status_detail": "UAT",
+        "status_color": null,
+        "sheet": "New & Enhancement",
+        "callout": "",
+        "timeline": {
+            "requirements": "Sep W4",
+            "design": "Sep W4",
+            "development": "Oct W3",
+            "it": "Oct W4",
+            "uat": "Nov W2",
+            "golive": "Nov W3"
+        },
+        "completed_last_week": false,
+        "dev": "Echo/Yinbo/Zoe, UIUX, FE, BE"
+    },
+    {
+        "name": "ODIP Holiday Shutdown Plan",
+        "track": "OPM",
+        "pm": "Echo/Yinbo/Zoe",
+        "roi": "",
+        "priority": "\u2014",
+        "npi": "No",
+        "status": "Completed",
+        "status_detail": "Go-Live - 7/29",
+        "status_color": null,
+        "sheet": "New & Enhancement",
+        "callout": "",
+        "timeline": {
+            "requirements": "\u2014",
+            "design": "\u2014",
+            "development": "\u2014",
+            "it": "\u2014",
+            "uat": "\u2014",
+            "golive": "\u2014"
+        },
+        "completed_last_week": false,
+        "dev": "UIUX, FE, BE"
+    },
+    {
+        "name": "ODIP PP Enhancement",
+        "track": "OPM",
+        "pm": "Echo/Yinbo/Zoe",
+        "roi": "",
+        "priority": "\u2014",
+        "npi": "No",
+        "status": "Completed",
+        "status_detail": "Go-Live - 10/8",
+        "status_color": null,
+        "sheet": "New & Enhancement",
+        "callout": "",
+        "timeline": {
+            "requirements": "\u2014",
+            "design": "\u2014",
+            "development": "Aug W1",
+            "it": "Aug W1",
+            "uat": "Aug W3",
+            "golive": "Aug W4"
+        },
+        "completed_last_week": false,
+        "dev": "UIUX, FE, BE"
+    },
+    {
+        "name": "ODIP Program & Site History",
+        "track": "OPM",
+        "pm": "Echo/Yinbo/Zoe",
+        "roi": "",
+        "priority": "\u2014",
+        "npi": "No",
+        "status": "In Progress",
+        "status_detail": "Dev in queue",
+        "status_color": null,
+        "sheet": "New & Enhancement",
+        "callout": "",
+        "timeline": {
+            "requirements": "\u2014",
+            "design": "\u2014",
+            "development": "\u2014",
+            "it": "\u2014",
+            "uat": "\u2014",
+            "golive": "\u2014"
+        },
+        "completed_last_week": false,
+        "dev": "UIUX, FE, BE"
+    },
+    {
+        "name": "ODIP Landing page",
+        "track": "OPM",
+        "pm": "Echo/Yinbo/Zoe",
+        "roi": "",
+        "priority": "\u2014",
+        "npi": "No",
+        "status": "In Progress",
+        "status_detail": "IT in progress",
+        "status_color": null,
+        "sheet": "New & Enhancement",
+        "callout": "",
+        "timeline": {
+            "requirements": "Oct W4",
+            "design": "Oct W4",
+            "development": "Nov W1",
+            "it": "Nov W1",
+            "uat": "N/A",
+            "golive": "Nov W1"
+        },
+        "completed_last_week": false,
+        "dev": "UIUX, Zoya, Quincy"
+    },
+    {
+        "name": "ODIP Report Center - LOB Weekly Summary",
+        "track": "OPM",
+        "pm": "\u2014",
+        "roi": "",
+        "priority": "\u2014",
+        "npi": "No",
+        "status": "In Progress",
+        "status_detail": "Design in progress",
+        "status_color": null,
+        "sheet": "New & Enhancement",
+        "callout": "",
+        "timeline": {
+            "requirements": "Aug W4",
+            "design": "N/A",
+            "development": "Sep W1",
+            "it": "Sep W1",
+            "uat": "Sep W1",
+            "golive": "Sep W1 (Soft Launch)"
+        },
+        "completed_last_week": false,
+        "dev": "Echo/Yinbo/Zoe, UIUX, FE, BE"
+    },
+    {
+        "name": "ODIP Report Center -OPS report",
+        "track": "OPM",
+        "pm": "Echo/Yinbo/Zoe",
+        "roi": "",
+        "priority": "\u2014",
+        "npi": "No",
+        "status": "In Progress",
+        "status_detail": "IT in progress",
+        "status_color": null,
+        "sheet": "New & Enhancement",
+        "callout": "",
+        "timeline": {
+            "requirements": "Aug W4",
+            "design": "N/A",
+            "development": "Sep W1",
+            "it": "Sep W1",
+            "uat": "Sep W1",
+            "golive": "Sep W1 (Soft Launch)"
+        },
+        "completed_last_week": false,
+        "dev": "UIUX, Fiona, Aerik"
+    },
+    {
+        "name": "ODIP Site Footprint & OPM Base",
+        "track": "OPM",
+        "pm": "Echo/Yinbo/Zoe",
+        "roi": "",
+        "priority": "\u2014",
+        "npi": "No",
+        "status": "In Progress",
+        "status_detail": "Dev in progress",
+        "status_color": null,
+        "sheet": "New & Enhancement",
+        "callout": "",
+        "timeline": {
+            "requirements": "May W3",
+            "design": "May W4",
+            "development": "May W4",
+            "it": "Jun W2",
+            "uat": "Jun W3",
+            "golive": "Jun Wk4"
+        },
+        "completed_last_week": false,
+        "dev": "UIUX, FE, BE"
+    },
+    {
+        "name": "PVD Dashboard",
+        "track": "OPM",
+        "pm": "Echo/Yinbo/Zoe",
+        "roi": "",
+        "priority": "\u2014",
+        "npi": "No",
+        "status": "Completed",
+        "status_detail": "Go-Live\uff0c IN enh go-live",
+        "status_color": null,
+        "sheet": "New & Enhancement",
+        "callout": "",
+        "timeline": {
+            "requirements": "May W2",
+            "design": "Jul W3",
+            "development": "Oct W5",
+            "it": "Nov W2",
+            "uat": "Dec W2",
+            "golive": "Dec W3"
+        },
+        "completed_last_week": false,
+        "dev": "UIUX, FE, BE"
+    },
+    {
+        "name": "Labor portal enhancement requirement",
+        "track": "OPM",
+        "pm": "Ying",
+        "roi": "",
+        "priority": "\u2014",
+        "npi": "No",
+        "status": "In Progress",
+        "status_detail": "Commodity change internal test done, hiring cost requirement dev in queue",
+        "status_color": null,
+        "sheet": "New & Enhancement",
+        "callout": "",
+        "timeline": {
+            "requirements": "\u2014",
+            "design": "\u2014",
+            "development": "Aug W1",
+            "it": "Aug W1",
+            "uat": "Aug W3",
+            "golive": "Aug W4"
+        },
+        "completed_last_week": false,
+        "dev": "UIUX, FE"
+    },
+    {
+        "name": "Ramp DL Report",
+        "track": "OPM",
+        "pm": "Zoe",
+        "roi": "",
+        "priority": "\u2014",
+        "npi": "No",
+        "status": "In Progress",
+        "status_detail": "Requirement sign-off. UIUX design in progress",
+        "status_color": null,
+        "sheet": "New & Enhancement",
+        "callout": "",
+        "timeline": {
+            "requirements": "Aug W4",
+            "design": "N/A",
+            "development": "Sep W1",
+            "it": "Sep W1",
+            "uat": "Sep W1",
+            "golive": "Sep W1 (Soft Launch)"
+        },
+        "completed_last_week": false,
+        "dev": "UIUX, FE, BE"
+    },
+    {
+        "name": "Capacity Planning Platform",
+        "track": "OPM",
+        "pm": "Echo",
+        "roi": "",
+        "priority": "\u2014",
+        "npi": "No",
+        "status": "Pending",
+        "status_detail": "Requirement",
+        "status_color": null,
+        "sheet": "New & Enhancement",
+        "callout": "",
+        "timeline": {
+            "requirements": "\u2014",
+            "design": "\u2014",
+            "development": "\u2014",
+            "it": "\u2014",
+            "uat": "\u2014",
+            "golive": "\u2014"
+        },
+        "completed_last_week": false,
+        "dev": "Echo/Yinbo/Zoe, UIUX, FE, BE"
+    },
+    {
+        "name": "Contractor E2E Process Automation",
+        "track": "Finance",
+        "pm": "Owen",
+        "roi": 5919.0,
+        "priority": "\u2014",
+        "npi": "No",
+        "status": "In Progress",
+        "status_detail": "Development",
+        "status_color": null,
+        "sheet": "GenAI & RPA",
+        "callout": "",
+        "timeline": {
+            "requirements": "\u2014",
+            "design": "\u2014",
+            "development": "\u2014",
+            "it": "\u2014",
+            "uat": "\u2014",
+            "golive": "\u2014"
+        },
+        "completed_last_week": false,
+        "dev": "IS&T"
+    },
+    {
+        "name": "Mac OCT Auto Analysis",
+        "track": "OPM",
+        "pm": "Sheryl",
+        "roi": 469.0,
+        "priority": "\u2014",
+        "npi": "No",
+        "status": "Completed",
+        "status_detail": "Go-Live",
+        "status_color": null,
+        "sheet": "GenAI & RPA",
+        "callout": "",
+        "timeline": {
+            "requirements": "Oct W5",
+            "design": "Nov W2",
+            "development": "Dec W3",
+            "it": "Dec W3",
+            "uat": "Jan W2",
+            "golive": "Jan W4"
+        },
+        "completed_last_week": false,
+        "dev": "IS&T"
+    },
+    {
+        "name": "Secure Deployment",
+        "track": "MD",
+        "pm": "Sheryl",
+        "roi": 6586.0,
+        "priority": "\u2014",
+        "npi": "No",
+        "status": "In Progress",
+        "status_detail": "UAT",
+        "status_color": null,
+        "sheet": "GenAI & RPA",
+        "callout": "",
+        "timeline": {
+            "requirements": "\u2014",
+            "design": "\u2014",
+            "development": "\u2014",
+            "it": "\u2014",
+            "uat": "\u2014",
+            "golive": "\u2014"
+        },
+        "completed_last_week": false,
+        "dev": "IS&T"
+    },
+    {
+        "name": "SG material vendor database tool - Phase 1",
+        "track": "ProdOps",
+        "pm": "Sheryl",
+        "roi": 720.0,
+        "priority": "\u2014",
+        "npi": "No",
+        "status": "In Progress",
+        "status_detail": "UAT",
+        "status_color": null,
+        "sheet": "GenAI & RPA",
+        "callout": "",
+        "timeline": {
+            "requirements": "Sep W4",
+            "design": "N/A",
+            "development": "Oct W4",
+            "it": "Oct W4",
+            "uat": "Oct W5",
+            "golive": "Nov W1"
+        },
+        "completed_last_week": false,
+        "dev": "Sheryl/Claire, IS&T"
+    },
+    {
+        "name": "AE Layout Management",
+        "track": "AME",
+        "pm": "Sheryl",
+        "roi": 640.0,
+        "priority": "\u2014",
+        "npi": "No",
+        "status": "In Progress",
+        "status_detail": "Requirements",
+        "status_color": null,
+        "sheet": "GenAI & RPA",
+        "callout": "",
+        "timeline": {
+            "requirements": "\u2014",
+            "design": "\u2014",
+            "development": "\u2014",
+            "it": "\u2014",
+            "uat": "\u2014",
+            "golive": "\u2014"
+        },
+        "completed_last_week": false,
+        "dev": "IS&T"
+    },
+    {
+        "name": "MP Wkly Report",
+        "track": "DFM",
+        "pm": "Luka",
+        "roi": 2000.0,
+        "priority": "\u2014",
+        "npi": "No",
+        "status": "Completed",
+        "status_detail": "Go-Live",
+        "status_color": null,
+        "sheet": "GenAI & RPA",
+        "callout": "",
+        "timeline": {
+            "requirements": "Aug W4",
+            "design": "N/A",
+            "development": "Sep W1",
+            "it": "Sep W1",
+            "uat": "Sep W1",
+            "golive": "Sep W1 (Soft Launch)"
+        },
+        "completed_last_week": false,
+        "dev": "IS&T"
+    },
+    {
+        "name": "List/Task App",
+        "track": "MPE",
+        "pm": "Luka",
+        "roi": 20000.0,
+        "priority": "\u2014",
+        "npi": "No",
+        "status": "In Progress",
+        "status_detail": "UAT",
+        "status_color": null,
+        "sheet": "GenAI & RPA",
+        "callout": "",
+        "timeline": {
+            "requirements": "\u2014",
+            "design": "\u2014",
+            "development": "\u2014",
+            "it": "\u2014",
+            "uat": "\u2014",
+            "golive": "\u2014"
+        },
+        "completed_last_week": false,
+        "dev": "IS&T"
+    },
+    {
+        "name": "SKD RPA ph1",
+        "track": "Logistics",
+        "pm": "Wayne Wang",
+        "roi": 184.0,
+        "priority": "\u2014",
+        "npi": "No",
+        "status": "Completed",
+        "status_detail": "Go-Live",
+        "status_color": null,
+        "sheet": "GenAI & RPA",
+        "callout": "",
+        "timeline": {
+            "requirements": "\u2014",
+            "design": "\u2014",
+            "development": "\u2014",
+            "it": "\u2014",
+            "uat": "Jul W5",
+            "golive": "Aug W1"
+        },
+        "completed_last_week": false,
+        "dev": "IS&T"
+    },
+    {
+        "name": "DFM Builder Tool Ph1",
+        "track": "DFM",
+        "pm": "Luka",
+        "roi": 3600.0,
+        "priority": "\u2014",
+        "npi": "No",
+        "status": "In Progress",
+        "status_detail": "Requirements",
+        "status_color": null,
+        "sheet": "GenAI & RPA",
+        "callout": "",
+        "timeline": {
+            "requirements": "Feb W3",
+            "design": "\u2014",
+            "development": "\u2014",
+            "it": "\u2014",
+            "uat": "\u2014",
+            "golive": "\u2014"
+        },
+        "completed_last_week": false,
+        "dev": "IS&T"
+    },
+    {
+        "name": "SKD RPA ph2",
+        "track": "Logistics",
+        "pm": "Wayne Wang",
+        "roi": 245.0,
+        "priority": "\u2014",
+        "npi": "No",
+        "status": "Completed",
+        "status_detail": "Go-Live",
+        "status_color": null,
+        "sheet": "GenAI & RPA",
+        "callout": "",
+        "timeline": {
+            "requirements": "\u2014",
+            "design": "\u2014",
+            "development": "\u2014",
+            "it": "\u2014",
+            "uat": "Jul W5",
+            "golive": "Aug W1"
+        },
+        "completed_last_week": false,
+        "dev": "IS&T"
+    },
+    {
+        "name": "Daily Bread",
+        "track": "Logistics",
+        "pm": "Wayne Wang",
+        "roi": 2853.0,
+        "priority": "\u2014",
+        "npi": "No",
+        "status": "Completed",
+        "status_detail": "Go-Live",
+        "status_color": null,
+        "sheet": "GenAI & RPA",
+        "callout": "",
+        "timeline": {
+            "requirements": "Jul W2",
+            "design": "Jul W5",
+            "development": "\u2014",
+            "it": "\u2014",
+            "uat": "\u2014",
+            "golive": "\u2014"
+        },
+        "completed_last_week": false,
+        "dev": "IS&T"
+    },
+    {
+        "name": "BuySell Collaboration Platform",
+        "track": "Buysell",
+        "pm": "Karen Li",
+        "roi": 1287.0,
+        "priority": "\u2014",
+        "npi": "No",
+        "status": "In Progress",
+        "status_detail": "Development",
+        "status_color": null,
+        "sheet": "GenAI & RPA",
+        "callout": "",
+        "timeline": {
+            "requirements": "\u2014",
+            "design": "\u2014",
+            "development": "\u2014",
+            "it": "\u2014",
+            "uat": "\u2014",
+            "golive": "\u2014"
+        },
+        "completed_last_week": false,
+        "dev": "IS&T"
+    },
+    {
+        "name": "PPS Dashboard",
+        "track": "Logistics",
+        "pm": "Wayne",
+        "roi": "",
+        "priority": "\u2014",
+        "npi": "No",
+        "status": "Completed",
+        "status_detail": "Go-Live",
+        "status_color": null,
+        "sheet": "Rollout",
+        "callout": "",
+        "timeline": {
+            "requirements": "Jan W4",
+            "design": "Feb W2",
+            "development": "Feb W2",
+            "it": "Feb W2",
+            "uat": "Feb W2",
+            "golive": "Feb W2"
+        },
+        "completed_last_week": false,
+        "dev": "/"
+    },
+    {
+        "name": "APO Execution - CSF",
+        "track": "Logistics",
+        "pm": "Lily",
+        "roi": "",
+        "priority": "\u2014",
+        "npi": "No",
+        "status": "Completed",
+        "status_detail": "Live",
+        "status_color": null,
+        "sheet": "CSF",
+        "callout": "",
+        "timeline": {
+            "requirements": "Nov W1",
+            "design": "Nov W4",
+            "development": "Dec W2",
+            "it": "Dec W2",
+            "uat": "Dec W3",
+            "golive": "Feb W2"
+        },
+        "completed_last_week": false,
+        "dev": "Jiamei"
+    },
+    {
+        "name": "Aging Inventory - CSF",
+        "track": "OPM",
+        "pm": "Lily",
+        "roi": "",
+        "priority": "\u2014",
+        "npi": "No",
+        "status": "Completed",
+        "status_detail": "Live",
+        "status_color": null,
+        "sheet": "CSF",
+        "callout": "",
+        "timeline": {
+            "requirements": "Nov W1",
+            "design": "Nov W4",
+            "development": "Dec W2",
+            "it": "Dec W2",
+            "uat": "Dec W3",
+            "golive": "Feb W2"
+        },
+        "completed_last_week": false,
+        "dev": "Jiamei, Liu Wei"
+    },
+    {
+        "name": "SKD - CSF",
+        "track": "OPM",
+        "pm": "Lily",
+        "roi": "",
+        "priority": "\u2014",
+        "npi": "No",
+        "status": "Completed",
+        "status_detail": "Live",
+        "status_color": null,
+        "sheet": "CSF",
+        "callout": "",
+        "timeline": {
+            "requirements": "\u2014",
+            "design": "\u2014",
+            "development": "\u2014",
+            "it": "\u2014",
+            "uat": "Jul W5",
+            "golive": "Aug W1"
+        },
+        "completed_last_week": false,
+        "dev": "Jiamei, Liu Wei"
+    },
+    {
+        "name": "CapIO - CSF",
+        "track": "OPM",
+        "pm": "Lily",
+        "roi": "",
+        "priority": "\u2014",
+        "npi": "No",
+        "status": "Completed",
+        "status_detail": "Go-Live",
+        "status_color": null,
+        "sheet": "CSF",
+        "callout": "",
+        "timeline": {
+            "requirements": "\u2014",
+            "design": "\u2014",
+            "development": "\u2014",
+            "it": "\u2014",
+            "uat": "Jul W5",
+            "golive": "Aug W1"
+        },
+        "completed_last_week": false,
+        "dev": "Jiamei, Liu Wei"
+    },
+    {
+        "name": "PPS CSF Enhancement - Region",
+        "track": "Logistics",
+        "pm": "Lily",
+        "roi": "",
+        "priority": "\u2014",
+        "npi": "No",
+        "status": "Completed",
+        "status_detail": "Live",
+        "status_color": null,
+        "sheet": "CSF",
+        "callout": "",
+        "timeline": {
+            "requirements": "May W4",
+            "design": "May W4",
+            "development": "May W4",
+            "it": "Jun W2",
+            "uat": "Jun W2",
+            "golive": "Jun Wk3"
+        },
+        "completed_last_week": false,
+        "dev": "Jiamei, Liu Wei"
+    },
+    {
+        "name": "PEAK CSF",
+        "track": "CSDM/SDE",
+        "pm": "Wini/Shuge/Lily",
+        "roi": "",
+        "priority": "\u2014",
+        "npi": "No",
+        "status": "Completed",
+        "status_detail": "Live",
+        "status_color": null,
+        "sheet": "CSF",
+        "callout": "",
+        "timeline": {
+            "requirements": "Sep W1",
+            "design": "Sep W4",
+            "development": "Oct W2",
+            "it": "Oct W2",
+            "uat": "Oct W3",
+            "golive": "Oct W3"
+        },
+        "completed_last_week": false,
+        "dev": "Tracy, Zoya, Mick / Lexie"
+    },
+    {
+        "name": "MD Small Parts - CSF Integr",
+        "track": "MD",
+        "pm": "Lily/Ying",
+        "roi": "",
+        "priority": "\u2014",
+        "npi": "No",
+        "status": "Completed",
+        "status_detail": "Go-Live",
+        "status_color": null,
+        "sheet": "CSF",
+        "callout": "",
+        "timeline": {
+            "requirements": "Aug W3",
+            "design": "Aug W3",
+            "development": "Aug W3",
+            "it": "Aug W3",
+            "uat": "Aug W4",
+            "golive": "Sep W1"
+        },
+        "completed_last_week": false,
+        "dev": "Tracy, Emily"
+    },
+    {
+        "name": "Enclosure Color Flip - CSF Integr",
+        "track": "MD",
+        "pm": "Lily/Ying",
+        "roi": "",
+        "priority": "\u2014",
+        "npi": "No",
+        "status": "Completed",
+        "status_detail": "Live in Oct wk5",
+        "status_color": null,
+        "sheet": "CSF",
+        "callout": "",
+        "timeline": {
+            "requirements": "Jul W4",
+            "design": "Aug W2",
+            "development": "Sep W1",
+            "it": "Sep W1",
+            "uat": "Sep W2",
+            "golive": "Sep W2"
+        },
+        "completed_last_week": false,
+        "dev": "\u2014"
+    },
+    {
+        "name": "iMac Accessory Inventory - CSF Integr",
+        "track": "MD",
+        "pm": "Lily/Ying",
+        "roi": "",
+        "priority": "\u2014",
+        "npi": "No",
+        "status": "Completed",
+        "status_detail": "Live in Nov wk2",
+        "status_color": null,
+        "sheet": "CSF",
+        "callout": "",
+        "timeline": {
+            "requirements": "Nov W1",
+            "design": "Nov W4",
+            "development": "Dec W2",
+            "it": "Dec W2",
+            "uat": "Dec W3",
+            "golive": "Feb W2"
+        },
+        "completed_last_week": false,
+        "dev": "\u2014"
+    },
+    {
+        "name": "CapEx OSS - CSF Integr",
+        "track": "MD",
+        "pm": "Lily/Echo",
+        "roi": "",
+        "priority": "\u2014",
+        "npi": "No",
+        "status": "Completed",
+        "status_detail": "Go-Live",
+        "status_color": null,
+        "sheet": "CSF",
+        "callout": "cut-over 9/5",
+        "timeline": {
+            "requirements": "Nov W1",
+            "design": "Nov W4",
+            "development": "Dec W2",
+            "it": "Dec W2",
+            "uat": "Dec W3",
+            "golive": "Feb W2"
+        },
+        "completed_last_week": false,
+        "dev": "Liu Wei, Jiamei"
+    },
+    {
+        "name": "LSU - CSF Integr",
+        "track": "OPM",
+        "pm": "Echo",
+        "roi": "",
+        "priority": "\u2014",
+        "npi": "No",
+        "status": "Completed",
+        "status_detail": "Live in Nov wk3",
+        "status_color": null,
+        "sheet": "CSF",
+        "callout": "",
+        "timeline": {
+            "requirements": "Jul W3",
+            "design": "Jul W5",
+            "development": "Phase 2: Sep W3",
+            "it": "Sep W4",
+            "uat": "Oct W3",
+            "golive": "Oct W5"
+        },
+        "completed_last_week": false,
+        "dev": "Echo/Crystal, Liu Wei, Jiamei"
+    },
+    {
+        "name": "Ops Metrics Dashboard - CSF Integr",
+        "track": "OPM",
+        "pm": "Echo",
+        "roi": "",
+        "priority": "\u2014",
+        "npi": "No",
+        "status": "In Progress",
+        "status_detail": "Requirements Not started, to merge in ODIP",
+        "status_color": null,
+        "sheet": "CSF",
+        "callout": "",
+        "timeline": {
+            "requirements": "May W2",
+            "design": "Jul W3",
+            "development": "Oct W5",
+            "it": "Nov W2",
+            "uat": "Dec W2",
+            "golive": "Dec W3"
+        },
+        "completed_last_week": false,
+        "dev": "Echo/Crystal, Liu Wei, Jiamei"
+    },
+    {
+        "name": "SFO - CSF Integr",
+        "track": "MPM",
+        "pm": "Echo",
+        "roi": "",
+        "priority": "\u2014",
+        "npi": "No",
+        "status": "In Progress",
+        "status_detail": "Requirements Not started",
+        "status_color": null,
+        "sheet": "CSF",
+        "callout": "",
+        "timeline": {
+            "requirements": "Nov W1",
+            "design": "Nov W4",
+            "development": "Dec W2",
+            "it": "Dec W2",
+            "uat": "Dec W3",
+            "golive": "Feb W2"
+        },
+        "completed_last_week": false,
+        "dev": "Echo/Crystal, Liu Wei, Jiamei"
+    },
+    {
+        "name": "CoStar - CSF Integr",
+        "track": "MD",
+        "pm": "Lily/Ying",
+        "roi": "",
+        "priority": "\u2014",
+        "npi": "No",
+        "status": "Pending",
+        "status_detail": "Plan in FY26 Q4",
+        "status_color": null,
+        "sheet": "CSF",
+        "callout": "",
+        "timeline": {
+            "requirements": "Nov W1",
+            "design": "Nov W4",
+            "development": "Dec W2",
+            "it": "Dec W2",
+            "uat": "Dec W3",
+            "golive": "Feb W2"
+        },
+        "completed_last_week": false,
+        "dev": "\u2014"
+    },
+    {
+        "name": "LMT Portal  - CSF Integr",
+        "track": "OPM",
+        "pm": "Lily/Ying",
+        "roi": "",
+        "priority": "\u2014",
+        "npi": "No",
+        "status": "Pending",
+        "status_detail": "Plan in FY26 Q4",
+        "status_color": null,
+        "sheet": "CSF",
+        "callout": "",
+        "timeline": {
+            "requirements": "Aug W3",
+            "design": "N/A",
+            "development": "Aug W3",
+            "it": "Aug W3",
+            "uat": "Aug W4",
+            "golive": "Aug W4"
+        },
+        "completed_last_week": false,
+        "dev": "\u2014"
+    }
+];
+
+
+
+                // Load projects: 默认直接使用本次部署的最新数据
+        let projects = defaultProjects;
+        try {
+            // 强内容数据指纹：基于 projects_data.json 的 SHA-256 哈希值
+            // 只要 Excel 中任何一个项目的状态、阶段、备注发生变化，hash 都会改变，强制立即清空旧缓存并使用最新数据
+            const currentDataSig = "DATA_SIG_20bab6d857d9e3e0";
+            const lastSig = localStorage.getItem("apo_data_sig");
+            if (lastSig !== currentDataSig) {
+                localStorage.removeItem("apo_portfolio_projects");
+                localStorage.setItem("apo_data_sig", currentDataSig);
+                projects = defaultProjects;
+            } else {
+                const saved = localStorage.getItem("apo_portfolio_projects");
+                if (saved) {
+                    const parsed = JSON.parse(saved);
+                    if (Array.isArray(parsed) && parsed.length > 0) {
+                        projects = parsed;
+                    }
+                }
+            }
+        } catch (e) {
+            console.warn("localStorage is unavailable:", e);
+        }
+
+        let currentSheet = 'all';
+        const stagesOrder = ['Request', 'Design', 'Development', 'IT', 'UAT', 'Go-live'];
+
+        // Column Filtering State (Supports Multi-Select for Track, PM, and HL Status)
+        const activeFilters = {
+            name: '',
+            track: [],
+            pm: [],
+            callout: '',
+            status_detail: [],
+            timeline_any: ''
+        };
+
+        function handleColumnFilter(field, value) {
+            activeFilters[field] = value;
+            renderDashboard();
+        }
+
+        function toggleMultiselect(field, suffix) {
+            const popover = document.getElementById('popover-' + field + '-' + suffix);
+            const isShown = popover.classList.contains('show');
+            
+            // Close other popovers first
+            document.querySelectorAll('.multiselect-popover').forEach(p => p.classList.remove('show'));
+            
+            if (!isShown) {
+                popover.classList.add('show');
+            }
+            
+            // Prevent event from bubbling to window click listener
+            if (window.event) {
+                window.event.stopPropagation();
+            }
+        }
+
+        function handleMultiselectChange(field, optionValue, isChecked) {
+            if (isChecked) {
+                if (!activeFilters[field].includes(optionValue)) {
+                    activeFilters[field].push(optionValue);
+                }
+            } else {
+                activeFilters[field] = activeFilters[field].filter(v => v !== optionValue);
+            }
+            renderDashboard();
+        }
+
+        function handleMultiselectAllChange(field, isChecked) {
+            if (isChecked) {
+                activeFilters[field] = getUniqueValues(field);
+            } else {
+                activeFilters[field] = [];
+            }
+            renderDashboard();
+        }
+
+        // Dismiss open dropdown popovers on outside click
+        window.addEventListener('click', function(e) {
+            if (!e.target.closest('.multiselect-container')) {
+                document.querySelectorAll('.multiselect-popover').forEach(popover => {
+                    popover.classList.remove('show');
+                });
+            }
+        });
+
+        function getUniqueValues(field) {
+            const vals = new Set();
+            projects.forEach(p => {
+                const val = p[field];
+                if (val && val !== '—' && val !== '') {
+                    vals.add(val.trim());
+                }
+            });
+            return Array.from(vals).sort();
+        }
+
+        function filterSheet(sheetName, element) {
+            currentSheet = sheetName;
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            if (element) {
+                element.classList.add('active');
+            } else if (window.event && window.event.target) {
+                window.event.target.classList.add('active');
+            }
+            renderDashboard();
+        }
+
+        function getStatusStyle(p) {
+            const statusClass = p.status.toLowerCase().replace(/\s+/g, "-");
+            const statusDetailLow = (p.status_detail || "").toLowerCase().trim();
+            
+            if (statusClass === 'on-hold' || statusDetailLow.includes('hold')) {
+                return "background-color: rgba(142, 142, 147, 0.15); color: var(--text-secondary); border: 1px solid var(--border-secondary);";
+            }
+            
+            if (statusDetailLow.includes('test') || statusDetailLow.includes('it') || statusDetailLow.includes('uat')) {
+                return "background-color: rgba(255, 149, 0, 0.12); color: var(--status-hold); border: 1px solid rgba(255, 149, 0, 0.25);";
+            }
+            
+            if (statusDetailLow.includes('design')) {
+                return "background-color: rgba(124, 58, 237, 0.12); color: #7C3AED; border: 1px solid rgba(124, 58, 237, 0.25);";
+            }
+
+            if (p.status_color) {
+                const hexVal = p.status_color.replace('#', '');
+                const r = parseInt(hexVal.substring(0, 2), 16);
+                const g = parseInt(hexVal.substring(2, 4), 16);
+                const b = parseInt(hexVal.substring(4, 6), 16);
+                const yiq = ((r * 299) + (g * 587) + (b * 114)) / 1000;
+                const textColor = yiq < 150 ? '#FFFFFF' : '#1D1D1F';
+                return "background-color: " + p.status_color + "; color: " + textColor + "; border: 1px solid rgba(0,0,0,0.15);";
+            }
+
+            if (statusClass === 'in-progress') {
+                return "background-color: rgba(0, 122, 255, 0.12); color: var(--status-progress); border: 1px solid rgba(0, 122, 255, 0.2);";
+            } else if (statusClass === 'completed') {
+                return "background-color: rgba(52, 199, 89, 0.12); color: var(--status-complete); border: 1px solid rgba(52, 199, 89, 0.2);";
+            } else {
+                return "background-color: rgba(142, 142, 147, 0.12); color: var(--status-pending); border: 1px solid var(--border-secondary);";
+            }
+        }
+
+        function getHighlightStage(statusDetail, projectName) {
+            const statusClean = (statusDetail || "").toLowerCase().trim();
+            const nameClean = (projectName || "").toLowerCase();
+            
+            if (nameClean.includes('daily bread')) {
+                return 'Development';
+            }
+            
+            if (statusClean.includes('scoping') || statusClean.includes('requirements')) {
+                return 'Request';
+            } else if (statusClean.includes('design')) {
+                return 'Design';
+            } else if (statusClean.includes('dev') || statusClean.includes('in dev') || statusClean.includes('development')) {
+                return 'Development';
+            } else if (statusClean.includes('test') || statusClean.includes('it')) {
+                return 'IT';
+            } else if (statusClean.includes('uat')) {
+                return 'UAT';
+            } else if (statusClean.includes('complete') || statusClean.includes('go-live') || statusClean.includes('live')) {
+                return 'Go-live';
+            }
+            return 'Pending';
+        }
+
+        function getSortingRank(p) {
+            const statusDetail = (p.status_detail || "").toLowerCase().trim();
+            const statusClass = p.status.toLowerCase().replace(/\s+/g, "-");
+            const nameClean = (p.name || "").toLowerCase();
+            
+            if (nameClean.includes('daily bread')) {
+                return 3;
+            }
+            
+            if (statusDetail.includes('uat')) {
+                return 1;
+            } else if (statusDetail.includes('test') || statusDetail.includes('it')) {
+                return 2;
+            } else if (statusDetail.includes('dev') || statusDetail.includes('in dev') || statusDetail.includes('development')) {
+                return 3;
+            } else if (statusDetail.includes('design')) {
+                return 4;
+            } else if (statusDetail.includes('scoping') || statusDetail.includes('requirements') || statusDetail.includes('request')) {
+                return 5;
+            } else if (statusClass === 'on-hold' || statusDetail.includes('hold')) {
+                return 6;
+            } else if (statusClass === 'completed') {
+                return 7;
+            }
+            return 8;
+        }
+
+        function handleEnterBlur(event) {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                event.target.blur();
+            }
+        }
+
+        function handleStatusBlur(element, index) {
+            const newText = element.innerText.trim();
+            if (!newText) {
+                element.innerText = projects[index].status_detail || "TBD";
+                return;
+            }
+            
+            if (newText === projects[index].status_detail) {
+                return;
+            }
+            
+            projects[index].status_detail = newText;
+            
+            // Auto update overall status grouping
+            const statusLow = newText.toLowerCase();
+            let mappedStatus = 'Pending';
+            if (statusLow.includes('progress') || statusLow.includes('dev') || statusLow.includes('design') || statusLow.includes('scoping') || statusLow.includes('requirements') || ['uat', 'development', 'internal test', 'testing', 'it/uat'].includes(statusLow)) {
+                mappedStatus = 'In Progress';
+            } else if (statusLow.includes('hold')) {
+                mappedStatus = 'On Hold';
+            } else if (statusLow.includes('complete') || statusLow.includes('go-live') || statusLow.includes('live') || statusLow === 'go-live') {
+                mappedStatus = 'Completed';
+            }
+            
+            projects[index].status = mappedStatus;
+            
+            // Special Rollout Sheet mapping
+            if (projects[index].sheet === 'Rollout') {
+                if (statusLow === 'go-live') {
+                    projects[index].status = 'Completed';
+                } else if (statusLow === 'it/uat') {
+                    projects[index].status = 'In Progress';
+                } else {
+                    projects[index].status = 'Pending';
+                }
+            }
+            
+            saveProjects();
+            renderDashboard();
+            showToast("Status updated");
+        }
+
+        function handlePMBlur(element, index) {
+            const newText = element.innerText.trim();
+            if (newText === (projects[index].pm || '—')) {
+                return;
+            }
+            projects[index].pm = newText || '—';
+            saveProjects();
+            showToast("PM updated");
+        }
+
+        function handleCalloutBlur(element, index) {
+            const newText = element.innerText.trim();
+            if (newText === (projects[index].dev || '—')) {
+                return;
+            }
+            projects[index].dev = newText || '—';
+            saveProjects();
+            showToast("Developer updated");
+        }
+
+        function handleDateFocus(element) {
+            if (element.innerText.trim() === '—') {
+                element.innerText = '';
+                element.classList.remove('empty-date');
+            }
+        }
+
+        function handleDateBlur(element, index, keyName) {
+            let newText = element.innerText.trim();
+            if (!newText || newText === '') {
+                newText = '—';
+            }
+            
+            if (newText === projects[index].timeline[keyName]) {
+                if (newText === '—') {
+                    element.classList.add('empty-date');
+                }
+                return;
+            }
+            
+            projects[index].timeline[keyName] = newText;
+            
+            saveProjects();
+            renderDashboard();
+            showToast("Timeline milestone updated");
+        }
+
+        function showAddProjectModal() {
+            document.getElementById('add-project-modal').classList.add('show');
+        }
+
+        function closeAddProjectModal() {
+            document.getElementById('add-project-modal').classList.remove('show');
+            document.getElementById('add-project-form').reset();
+        }
+
+        function handleAddProject(event) {
+            event.preventDefault();
+            
+            const name = document.getElementById('new-project-name').value.trim();
+            const sheet = document.getElementById('new-project-sheet').value;
+            const track = document.getElementById('new-project-track').value.trim() || 'TBD';
+            const pm = document.getElementById('new-project-pm').value.trim() || '—';
+            const dev = document.getElementById('new-project-dev').value.trim() || '—';
+            const statusDetail = document.getElementById('new-project-status-detail').value.trim() || 'TBD';
+            const callout = document.getElementById('new-project-callout').value.trim() || '';
+            
+            if (!name) {
+                alert('Project Name is required.');
+                return;
+            }
+
+            // Determine overall status grouping
+            const statusLow = statusDetail.toLowerCase();
+            let mappedStatus = 'Pending';
+            if (statusLow.includes('progress') || statusLow.includes('dev') || statusLow.includes('design') || statusLow.includes('scoping') || statusLow.includes('requirements') || ['uat', 'development', 'internal test', 'testing', 'it/uat'].includes(statusLow)) {
+                mappedStatus = 'In Progress';
+            } else if (statusLow.includes('hold')) {
+                mappedStatus = 'On Hold';
+            } else if (statusLow.includes('complete') || statusLow.includes('go-live') || statusLow.includes('live') || statusLow === 'go-live') {
+                mappedStatus = 'Completed';
+            }
+            
+            // Special Rollout Sheet mapping override
+            if (sheet === 'Rollout') {
+                if (statusLow === 'go-live') {
+                    mappedStatus = 'Completed';
+                } else if (statusLow === 'it/uat') {
+                    mappedStatus = 'In Progress';
+                } else {
+                    mappedStatus = 'Pending';
+                }
+            }
+
+            const newProject = {
+                name: name,
+                sheet: sheet,
+                track: track,
+                pm: pm,
+                dev: dev,
+                status: mappedStatus,
+                status_detail: statusDetail,
+                status_color: null,
+                callout: callout,
+                priority: "Medium",
+                npi: "No",
+                timeline: {
+                    requirements: document.getElementById('new-project-req').value.trim() || '—',
+                    design: document.getElementById('new-project-design').value.trim() || '—',
+                    development: document.getElementById('new-project-dev').value.trim() || '—',
+                    it: document.getElementById('new-project-it').value.trim() || '—',
+                    uat: document.getElementById('new-project-uat').value.trim() || '—',
+                    golive: document.getElementById('new-project-golive').value.trim() || '—'
+                }
+            };
+
+            projects.unshift(newProject); // Add to the top of the list
+            
+            saveProjects();
+            renderDashboard();
+            closeAddProjectModal();
+            showToast("New project added successfully");
+        }
+
+        let projectToDeleteIndex = null;
+
+        function handleDeleteProject(index) {
+            projectToDeleteIndex = index;
+            const project = projects[index];
+            document.getElementById('delete-confirm-text').innerText = "Are you sure you want to permanently delete '" + project.name + "'? This action cannot be undone.";
+            document.getElementById('delete-confirm-modal').classList.add('show');
+        }
+
+        function closeDeleteModal() {
+            document.getElementById('delete-confirm-modal').classList.remove('show');
+            projectToDeleteIndex = null;
+        }
+
+        function executeDeleteProject() {
+            if (projectToDeleteIndex !== null) {
+                projects.splice(projectToDeleteIndex, 1);
+                saveProjects();
+                renderDashboard();
+                closeDeleteModal();
+                showToast("Project deleted successfully");
+            }
+        }
+
+        function saveProjects() {
+            try {
+                localStorage.setItem('apo_portfolio_projects', JSON.stringify(projects));
+            } catch (e) {
+                console.warn("Unable to save projects to localStorage:", e);
+            }
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('save-toast');
+            if (toast) {
+                toast.innerText = message;
+                toast.classList.add('show');
+                setTimeout(() => {
+                    toast.classList.remove('show');
+                }, 2000);
+            }
+        }
+
+        function resetToDefault() {
+            document.getElementById('reset-confirm-modal').classList.add('show');
+        }
+
+        function closeResetModal() {
+            document.getElementById('reset-confirm-modal').classList.remove('show');
+        }
+
+        function executeResetToDefault() {
+            try {
+                localStorage.removeItem('apo_portfolio_projects');
+                localStorage.removeItem('apo_data_sig');
+            } catch (e) {
+                console.warn("Unable to clear projects from localStorage:", e);
+            }
+            projects = JSON.parse(JSON.stringify(defaultProjects));
+            renderDashboard();
+            closeResetModal();
+            showToast("Synced with latest server data");
+        }
+
+
+
+        function renderDashboard() {
+            const showCompleted = document.getElementById('completed-toggle').checked;
+            
+            // Preserve open popover state
+            let openPopoverId = null;
+            const activePopover = document.querySelector('.multiselect-popover.show');
+            if (activePopover) {
+                openPopoverId = activePopover.id;
+            }
+            
+            const sheets = {
+                'New & Enhancement': { id: 'sheet-newenhancement', projects: [] },
+                'GenAI & RPA': { id: 'sheet-genairpa', projects: [] },
+                'Rollout': { id: 'sheet-rollout', projects: [] },
+                'CSF': { id: 'sheet-csf', projects: [] }
+            };
+            
+            let countTotal = 0;
+            let countInProgress = 0;
+            let countOnHold = 0;
+            let countCompleted = 0;
+            
+            // Clear current structures
+            Object.values(sheets).forEach(s => {
+                const el = document.getElementById(s.id);
+                if (el) el.innerHTML = '';
+            });
+            
+            // Filter and group projects, update dynamic KPI counters
+            projects.forEach((p, idx) => {
+                const isCompleted = p.status === 'Completed';
+                const isHold = p.status === 'On Hold';
+                const isInProgress = p.status === 'In Progress';
+                
+                if (isCompleted && !showCompleted) {
+                    return;
+                }
+
+                // Apply active column filters
+                if (activeFilters.name && !p.name.toLowerCase().includes(activeFilters.name.toLowerCase())) {
+                    return;
+                }
+                if (activeFilters.track.length > 0 && !activeFilters.track.includes((p.track || '').trim())) {
+                    return;
+                }
+                if (activeFilters.pm.length > 0 && !activeFilters.pm.includes((p.pm || '').trim())) {
+                    return;
+                }
+                if (activeFilters.callout && !(p.callout || "").toLowerCase().includes(activeFilters.callout.toLowerCase())) {
+                    return;
+                }
+                if (activeFilters.status_detail.length > 0 && !activeFilters.status_detail.includes((p.status_detail || '').trim())) {
+                    return;
+                }
+                if (activeFilters.timeline_any) {
+                    const searchVal = activeFilters.timeline_any.toLowerCase();
+                    const hasTimelineMatch = Object.values(p.timeline).some(val => val && val.toLowerCase().includes(searchVal));
+                    if (!hasTimelineMatch) {
+                        return;
+                    }
+                }
+                
+                // Tab Filter (Portfolio) for dynamic KPI counting
+                if (currentSheet !== 'all') {
+                    const cleanProjectSheet = (p.sheet || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+                    const cleanTargetSheet = currentSheet.toLowerCase().replace(/[^a-z0-9]/g, '');
+                    if (cleanProjectSheet !== cleanTargetSheet) {
+                        return; // Skip counting and grouping for non-active tabs
+                    }
+                }
+                
+                const sheetInfo = sheets[p.sheet];
+                if (sheetInfo) {
+                    sheetInfo.projects.push({ ...p, originalIndex: idx });
+                    
+                    countTotal++;
+                    if (isCompleted) countCompleted++;
+                    else if (isHold) countOnHold++;
+                    else if (isInProgress) countInProgress++;
+                }
+            });
+            
+            // Update UI KPI counters
+            document.getElementById('kpi-total').innerText = countTotal;
+            document.getElementById('kpi-progress').innerText = countInProgress;
+            document.getElementById('kpi-hold').innerText = countOnHold;
+            document.getElementById('kpi-completed').innerText = countCompleted;
+            
+            
+            // Build filter options dynamically from all projects
+            const uniqueTracks = getUniqueValues('track');
+            const uniquePMs = getUniqueValues('pm');
+            const uniqueStatuses = getUniqueValues('status_detail');
+            
+            // Render tables into sections
+            Object.entries(sheets).forEach(([sheetName, s]) => {
+                const secEl = document.getElementById(s.id);
+                if (!secEl) return;
+                
+                const cleanSheetId = s.id.replace('sheet-', '');
+                const isSheetVisible = (currentSheet === 'all' || cleanSheetId === currentSheet.toLowerCase().replace(/[^a-z0-9]/g, ''));
+                
+                if (s.projects.length === 0 || !isSheetVisible) {
+                    secEl.style.display = 'none';
+                    return;
+                }
+                
+                secEl.style.display = 'block';
+                
+                // Keep native Excel row order (do not sort by stage priority)
+                s.projects.sort((a, b) => a.originalIndex - b.originalIndex);
+                
+                let tableHtml = "";
+                tableHtml += "<div class='section-title'>";
+                tableHtml += sheetName + " Portfolio";
+                tableHtml += "<span class='section-count'>" + s.projects.length + "</span>";
+                tableHtml += "</div>";
+                tableHtml += "<div class='project-table-container'>";
+                tableHtml += "<table>";
+                tableHtml += "<thead>";
+                tableHtml += "<tr>";
+                tableHtml += "<th style='width: 20%;'>Project</th>";
+                tableHtml += "<th style='width: 8%;'>Track</th>";
+                tableHtml += "<th style='width: 10%;'>PM</th>";
+                tableHtml += "<th style='width: 15%;'>Remark</th>";
+                tableHtml += "<th style='width: 12%;'>HL Status</th>";
+                tableHtml += "<th style='width: 35%;'>Development Lifecycle & Timeline Progress</th>";
+                tableHtml += "</tr>";
+                
+                // Secondary Interactive Column Filtering Header Row
+                tableHtml += "<tr class='filter-row'>";
+                
+                // 1. Project Name filter (text input)
+                tableHtml += "<th><input type='text' class='column-filter-input' oninput='handleColumnFilter(\"name\", this.value)' placeholder='Filter Project...' value='" + (activeFilters.name || "") + "'></th>";
+                
+                // 2. Track filter (multi-select dropdown)
+                let trackBtnText = "All Track";
+                if (activeFilters.track.length > 0) {
+                    trackBtnText = "Track (" + activeFilters.track.length + " selected)";
+                }
+                tableHtml += "<th><div class='multiselect-container'>";
+                tableHtml += "<button type='button' class='multiselect-btn' onclick='toggleMultiselect(\"track\", \"" + cleanSheetId + "\")'>" + trackBtnText + "</button>";
+                tableHtml += "<div class='multiselect-popover' id='popover-track-" + cleanSheetId + "' onclick='event.stopPropagation()'>";
+                
+                // Sort selected options to the top
+                const sortedTracks = [...uniqueTracks].sort((a, b) => {
+                    const aChecked = activeFilters.track.includes(a);
+                    const bChecked = activeFilters.track.includes(b);
+                    if (aChecked && !bChecked) return -1;
+                    if (!aChecked && bChecked) return 1;
+                    return a.localeCompare(b);
+                });
+                
+                sortedTracks.forEach(t => {
+                    const checked = activeFilters.track.includes(t) ? " checked" : "";
+                    tableHtml += "<div class='multiselect-option'>";
+                    tableHtml += "<input type='checkbox' id='chk-track-" + cleanSheetId + "-" + t + "' onchange='handleMultiselectChange(\"track\", \"" + t + "\", this.checked)'" + checked + ">";
+                    tableHtml += "<label for='chk-track-" + cleanSheetId + "-" + t + "'>" + t + "</label>";
+                    tableHtml += "</div>";
+                });
+                tableHtml += "</div></div></th>";
+                
+                // 3. PM filter (multi-select dropdown)
+                let pmBtnText = "All PM";
+                if (activeFilters.pm.length > 0) {
+                    pmBtnText = "PM (" + activeFilters.pm.length + " selected)";
+                }
+                tableHtml += "<th><div class='multiselect-container'>";
+                tableHtml += "<button type='button' class='multiselect-btn' onclick='toggleMultiselect(\"pm\", \"" + cleanSheetId + "\")'>" + pmBtnText + "</button>";
+                tableHtml += "<div class='multiselect-popover' id='popover-pm-" + cleanSheetId + "' onclick='event.stopPropagation()'>";
+                
+                // Sort selected options to the top
+                const sortedPMs = [...uniquePMs].sort((a, b) => {
+                    const aChecked = activeFilters.pm.includes(a);
+                    const bChecked = activeFilters.pm.includes(b);
+                    if (aChecked && !bChecked) return -1;
+                    if (!aChecked && bChecked) return 1;
+                    return a.localeCompare(b);
+                });
+                
+                sortedPMs.forEach(pm => {
+                    const checked = activeFilters.pm.includes(pm) ? " checked" : "";
+                    tableHtml += "<div class='multiselect-option'>";
+                    tableHtml += "<input type='checkbox' id='chk-pm-" + cleanSheetId + "-" + pm + "' onchange='handleMultiselectChange(\"pm\", \"" + pm + "\", this.checked)'" + checked + ">";
+                    tableHtml += "<label for='chk-pm-" + cleanSheetId + "-" + pm + "'>" + pm + "</label>";
+                    tableHtml += "</div>";
+                });
+                tableHtml += "</div></div></th>";
+                
+                // 4. Developer filter (text input)
+                tableHtml += "<th><input type='text' class='column-filter-input' oninput='handleColumnFilter(\"callout\", this.value)' placeholder='Filter Remark...' value='" + (activeFilters.callout || "") + "'></th>";
+                
+                // 5. High-Level Status filter (multi-select dropdown)
+                let statusBtnText = "All Status";
+                if (activeFilters.status_detail.length > 0) {
+                    statusBtnText = "Status (" + activeFilters.status_detail.length + " selected)";
+                }
+                tableHtml += "<th><div class='multiselect-container'>";
+                tableHtml += "<button type='button' class='multiselect-btn' onclick='toggleMultiselect(\"status_detail\", \"" + cleanSheetId + "\")'>" + statusBtnText + "</button>";
+                tableHtml += "<div class='multiselect-popover' id='popover-status_detail-" + cleanSheetId + "' onclick='event.stopPropagation()'>";
+                
+                // Sort selected options to the top
+                const sortedStatuses = [...uniqueStatuses].sort((a, b) => {
+                    const aChecked = activeFilters.status_detail.includes(a);
+                    const bChecked = activeFilters.status_detail.includes(b);
+                    if (aChecked && !bChecked) return -1;
+                    if (!aChecked && bChecked) return 1;
+                    return a.localeCompare(b);
+                });
+                
+                sortedStatuses.forEach(st => {
+                    const checked = activeFilters.status_detail.includes(st) ? " checked" : "";
+                    tableHtml += "<div class='multiselect-option'>";
+                    tableHtml += "<input type='checkbox' id='chk-st-" + cleanSheetId + "-" + st + "' onchange='handleMultiselectChange(\"status_detail\", \"" + st + "\", this.checked)'" + checked + ">";
+                    tableHtml += "<label for='chk-st-" + cleanSheetId + "-" + st + "'>" + st + "</label>";
+                    tableHtml += "</div>";
+                });
+                tableHtml += "</div></div></th>";
+                
+
+                
+                // 6. Timeline filter (text input)
+                tableHtml += "<th><input type='text' class='column-filter-input' oninput='handleColumnFilter(\"timeline_any\", this.value)' placeholder='Filter Timeline...' value='" + (activeFilters.timeline_any || "") + "'></th>";
+                
+                tableHtml += "</tr>";
+                tableHtml += "</thead>";
+                tableHtml += "<tbody>";
+                
+                s.projects.forEach(p => {
+                    let statusClass = p.status.toLowerCase().replace(/\s+/g, "-");
+                    let badgeText = p.status_detail || "TBD";
+                    if (statusClass === 'tbd' || statusClass === 'tbd/other' || statusClass === '') {
+                        statusClass = 'pending';
+                        badgeText = 'Pending';
+                    }
+                    
+                    const editAttr = "contenteditable='true'";
+                    const highlightStageName = getHighlightStage(p.status_detail, p.name);
+                    const highlightIdx = stagesOrder.indexOf(highlightStageName);
+                    
+                    let timelineStepsHtml = '';
+                    
+                    stagesOrder.forEach((stage, sIdx) => {
+                        let keyName = stage.toLowerCase().replace('-', '');
+                        if (keyName === 'request') {
+                            keyName = 'requirements';
+                        }
+                        
+                        const val = p.timeline[keyName] || '—';
+                        const isActiveStep = (val && val !== '—' && val !== '');
+                        const isKeyHighlight = (stage === highlightStageName);
+                        
+                        let stepClasses = [];
+                        if (isKeyHighlight) {
+                            stepClasses.push("key-highlight");
+                            if (stage === 'Design') stepClasses.push("stage-design");
+                            else if (stage === 'IT') stepClasses.push("stage-it");
+                            else if (stage === 'UAT') stepClasses.push("stage-uat");
+                            if (statusClass === 'on-hold') stepClasses.push("status-on-hold-timeline");
+                        } else if (highlightIdx !== -1 && sIdx < highlightIdx) {
+                            stepClasses.push("completed-stage");
+                        } else {
+                            stepClasses.push("future-stage");
+                        }
+                        
+                        const classStr = stepClasses.join(' ');
+                        const opacityLabel = (isActiveStep || isKeyHighlight || (highlightIdx !== -1 && sIdx < highlightIdx)) ? '' : 'style="opacity: 0.4;"';
+                        const stepValDisplay = isActiveStep ? (": " + val) : ": Backlog";
+                        
+                        const timeSubClass = isActiveStep ? '' : 'empty-date';
+                        const timeSubHtml = "<div class='timeline-time-sub " + timeSubClass + "' " + editAttr + " onfocus='handleDateFocus(this)' onblur='handleDateBlur(this, " + p.originalIndex + ", \"" + keyName + "\")' onkeydown='handleEnterBlur(event)'>" + val + "</div>";
+                        
+                        const pointerDownAttr = isKeyHighlight ? (" onpointerdown='initTimelineDrag(event, " + p.originalIndex + ")'") : '';
+                        const cursorStyle = isKeyHighlight ? "style='cursor: grab;'" : '';
+                        
+                        timelineStepsHtml += "<div class='timeline-step " + classStr + "' data-stage='" + stage + "' onclick='handleTimelineClick(event, " + p.originalIndex + ", \"" + stage + "\")' style='cursor: pointer;'>";
+                        timelineStepsHtml += "<div class='timeline-tooltip'>" + stage + stepValDisplay + "</div>";
+                        timelineStepsHtml += "<div class='timeline-dot' " + pointerDownAttr + " " + cursorStyle + "></div>";
+                        timelineStepsHtml += "<div class='timeline-label' " + opacityLabel + ">" + stage + "</div>";
+                        timelineStepsHtml += timeSubHtml;
+                        timelineStepsHtml += "</div>";
+                    });
+                    
+                    const timelineHtml = "<div class='timeline-wrapper'><div class='timeline-line'></div><div class='timeline-steps-container'>" + timelineStepsHtml + "</div></div>";
+                    
+                    const statusStyle = getStatusStyle(p);
+                    
+                    tableHtml += "<tr data-status='" + statusClass + "'>";
+                    tableHtml += "<td>";
+                    tableHtml += "  <div style='display: flex; justify-content: space-between; align-items: flex-start; gap: 12px;'>";
+                    tableHtml += "    <div>";
+                    tableHtml += "      <strong style='font-size: 15px;'>" + p.name + "</strong>";
+                    tableHtml += "      <div style='color: var(--text-secondary); font-size: 12px; margin-top: 4px;'>" + (p.callout || '') + "</div>";
+                    tableHtml += "    </div>";
+                    tableHtml += "    <button class='delete-project-btn' onclick='handleDeleteProject(" + p.originalIndex + ")' title='Delete project'>";
+                    tableHtml += "      <svg width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'><polyline points='3 6 5 3 21 6'></polyline><path d='M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2'></path><line x1='10' y1='11' x2='10' y2='17'></line><line x1='14' y1='11' x2='14' y2='17'></line></svg>";
+                    tableHtml += "    </button>";
+                    tableHtml += "  </div>";
+                    tableHtml += "</td>";
+                    tableHtml += "<td><span class='track-tag'>" + p.track + "</span></td>";
+                    tableHtml += "<td><span class='pm-cell' " + editAttr + " onblur='handlePMBlur(this, " + p.originalIndex + ")' onkeydown='handleEnterBlur(event)'>" + (p.pm || '—') + "</span></td>";
+                    tableHtml += "<td><span class='remark-cell' " + editAttr + " onblur='handleCalloutBlur(this, " + p.originalIndex + ")' onkeydown='handleEnterBlur(event)'>" + (p.callout || '—') + "</span></td>";
+                    tableHtml += "<td><span class='status-badge' style='" + statusStyle + "' " + editAttr + " onblur='handleStatusBlur(this, " + p.originalIndex + ")' onkeydown='handleEnterBlur(event)'>" + badgeText + "</span></td>";
+                    
+
+                    
+                    tableHtml += "<td>" + timelineHtml + "</td>";
+                    tableHtml += "</tr>";
+                });
+                
+                tableHtml += "</tbody></table></div>";
+                
+                secEl.innerHTML = tableHtml;
+            });
+
+            
+            // Render ROI Chart if GenAI & RPA is selected
+            const chartContainer = document.getElementById("roi-chart-container");
+            if (currentSheet === "genai_rpa" && typeof echarts !== "undefined") {
+                chartContainer.style.display = "block";
+                const genaiProjects = sheets["GenAI & RPA"] ? sheets["GenAI & RPA"].projects : [];
+                const chartData = [...genaiProjects].filter(p => p.roi > 0).sort((a, b) => b.roi - a.roi);
+                const names = chartData.map(p => p.name);
+                const values = chartData.map(p => ({
+                    value: p.roi,
+                    status: p.status_detail || p.status || 'Other'
+                }));
+                const getColor = (status) => {
+                    const lowStatus = (status || "").toLowerCase();
+                    if (lowStatus.includes("dev")) return "#5470C6";
+                    if (lowStatus.includes("uat")) return "#CC664F";
+                    if (lowStatus.includes("req")) return "#4B797A";
+                    if (lowStatus.includes("design")) return "#7B709C";
+                    if (lowStatus.includes("hold") || lowStatus === "on hold" || lowStatus.includes("pause")) return "#CCCCCC";
+                    if (lowStatus.includes("live")) return "#5F7F45";
+                    return "#CCCCCC";
+                };
+                
+                if (!window.roiChart) {
+                    window.roiChart = echarts.init(chartContainer);
+                    window.addEventListener("resize", () => window.roiChart.resize());
+                }
+                window.roiChart.setOption({
+                    title: { text: "GenAI & RPA Projects ROI", left: "center", textStyle: { fontFamily: "-apple-system" } },
+                    legend: {
+                        data: ['Requirements', 'Design', 'Development', 'UAT', 'Go-Live', 'On Hold'],
+                        bottom: 0,
+                        itemWidth: 12,
+                        itemHeight: 12,
+                        textStyle: { fontSize: 11 }
+                    },
+                    tooltip: {
+                        trigger: "axis",
+                        axisPointer: { type: "shadow" },
+                        formatter: function (params) {
+                            const data = params[0].data;
+                            return params[0].name + "<br/>ROI: " + data.value + " hrs<br/>Status: " + data.status;
+                        }
+                    },
+                    grid: { left: "3%", right: "8%", bottom: "10%", containLabel: true },
+                    xAxis: { type: "value", name: "hrs" },
+                    yAxis: {
+                        type: "category",
+                        data: names,
+                        inverse: true,
+                        axisLabel: {
+                            interval: 0,
+                            formatter: function (value) {
+                                return value.length > 30 ? value.substring(0, 30) + "..." : value;
+                            }
+                        }
+                    },
+                    series: [
+                        {
+                            type: "bar",
+                            data: values.map(item => ({
+                                value: item.value,
+                                status: item.status,
+                                itemStyle: { color: getColor(item.status) }
+                            })),
+                            barWidth: '60%',
+                            label: { show: true, position: "right", formatter: "{c}" }
+                        },
+                        // Dummy series just to trigger the legend rendering with correct colors
+                        { name: 'Requirements', type: 'bar', data: [], itemStyle: {color: '#4B797A'} },
+                        { name: 'Design', type: 'bar', data: [], itemStyle: {color: '#7B709C'} },
+                        { name: 'Development', type: 'bar', data: [], itemStyle: {color: '#5470C6'} },
+                        { name: 'UAT', type: 'bar', data: [], itemStyle: {color: '#CC664F'} },
+                        { name: 'Go-Live', type: 'bar', data: [], itemStyle: {color: '#5F7F45'} },
+                        { name: 'On Hold', type: 'bar', data: [], itemStyle: {color: '#CCCCCC'} },
+                        { name: 'Other', type: 'bar', data: [], itemStyle: {color: '#999999'} }
+                    ]
+                });
+            } else {
+                chartContainer.style.display = "none";
+            }
+
+            // Re-open the popover if it existed in the newly rendered HTML
+            if (openPopoverId) {
+                const popover = document.getElementById(openPopoverId);
+                if (popover) {
+                    popover.classList.add('show');
+                }
+            }
+        }
+
+        // Interactive timeline click handler
+        function handleTimelineClick(event, projIdx, stageName) {
+            // Avoid triggering if clicking date input or label editing
+            if (event.target.classList.contains('timeline-time-sub') || event.target.tagName === 'INPUT') {
+                return;
+            }
+            updateProjectStage(projIdx, stageName);
+        }
+
+        // Mapping from timeline stage to Status Detail (HL Status) and Status Group
+        const stageStatusMap = {
+            'Request': { detail: 'Scoping', group: 'In Progress' },
+            'Design': { detail: 'Design', group: 'In Progress' },
+            'Development': { detail: 'In Dev', group: 'In Progress' },
+            'IT': { detail: 'Internal Test', group: 'In Progress' },
+            'UAT': { detail: 'UAT', group: 'In Progress' },
+            'Go-live': { detail: 'Complete', group: 'Completed' }
+        };
+
+        function updateProjectStage(projIdx, stageName) {
+            const mapInfo = stageStatusMap[stageName];
+            if (!mapInfo) return;
+
+            const p = projects[projIdx];
+            if (!p) return;
+
+            // Only update if it actually changed
+            if (p.status_detail === mapInfo.detail && p.status === mapInfo.group) {
+                return;
+            }
+
+            p.status_detail = mapInfo.detail;
+            p.status = mapInfo.group;
+
+            // Special Rollout Sheet mapping
+            if (p.sheet === 'Rollout') {
+                if (stageName === 'Go-live') {
+                    p.status = 'Completed';
+                } else if (stageName === 'IT' || stageName === 'UAT') {
+                    p.status = 'In Progress';
+                } else {
+                    p.status = 'Pending';
+                }
+            }
+
+            // Trigger celebration on Go-live
+            if (stageName === 'Go-live') {
+                triggerCelebration();
+            }
+
+            saveProjects();
+            renderDashboard();
+            showToast("Stage updated to " + stageName + " (" + p.status_detail + ")");
+        }
+
+        // Canvas Confetti Celebration Effect
+        function triggerCelebration() {
+            const canvas = document.createElement('canvas');
+            canvas.style.position = 'fixed';
+            canvas.style.top = '0';
+            canvas.style.left = '0';
+            canvas.style.width = '100vw';
+            canvas.style.height = '100vh';
+            canvas.style.zIndex = '9999';
+            canvas.style.pointerEvents = 'none';
+            document.body.appendChild(canvas);
+
+            const ctx = canvas.getContext('2d');
+            let width = canvas.width = window.innerWidth;
+            let height = canvas.height = window.innerHeight;
+
+            window.addEventListener('resize', () => {
+                width = canvas.width = window.innerWidth;
+                height = canvas.height = window.innerHeight;
+            }, { once: true });
+
+            const colors = [
+                '#FF2D55', '#FF9500', '#FFCC00', '#4CD964', '#5AC8FA', '#007AFF', '#5856D6', '#AF52DE'
+            ];
+
+            const particles = [];
+            const particleCount = 150;
+
+            for (let i = 0; i < particleCount; i++) {
+                const side = i % 2 === 0 ? 'left' : 'right';
+                particles.push({
+                    x: side === 'left' ? 0 : width,
+                    y: height * 0.8,
+                    angle: side === 'left' ? -Math.PI / 4 + (Math.random() * 0.3 - 0.15) : -3 * Math.PI / 4 + (Math.random() * 0.3 - 0.15),
+                    speed: 15 + Math.random() * 15,
+                    gravity: 0.4 + Math.random() * 0.2,
+                    drag: 0.96,
+                    color: colors[Math.floor(Math.random() * colors.length)],
+                    size: 8 + Math.random() * 6,
+                    rotation: Math.random() * 360,
+                    rotationSpeed: -5 + Math.random() * 10,
+                    opacity: 1
+                });
+            }
+
+            let animationFrameId;
+            const duration = 180; // ~3 seconds
+            let currentFrame = 0;
+
+            function update() {
+                ctx.clearRect(0, 0, width, height);
+                let active = false;
+
+                particles.forEach(p => {
+                    if (p.opacity <= 0) return;
+
+                    p.x += Math.cos(p.angle) * p.speed;
+                    p.y += Math.sin(p.angle) * p.speed + p.gravity;
+                    p.speed *= p.drag;
+                    p.rotation += p.rotationSpeed;
+
+                    if (currentFrame > duration * 0.6) {
+                        p.opacity -= 0.02;
+                    }
+
+                    if (p.opacity > 0 && p.y < height && p.x >= 0 && p.x <= width) {
+                        active = true;
+
+                        ctx.save();
+                        ctx.translate(p.x, p.y);
+                        ctx.rotate(p.rotation * Math.PI / 180);
+                        ctx.fillStyle = p.color;
+                        ctx.globalAlpha = p.opacity;
+                        
+                        if (p.size % 2 === 0) {
+                            ctx.fillRect(-p.size / 2, -p.size / 4, p.size, p.size / 2);
+                        } else {
+                            ctx.beginPath();
+                            ctx.arc(0, 0, p.size / 2, 0, Math.PI * 2);
+                            ctx.fill();
+                        }
+                        ctx.restore();
+                    }
+                });
+
+                currentFrame++;
+
+                if (active && currentFrame < duration) {
+                    animationFrameId = requestAnimationFrame(update);
+                } else {
+                    cancelAnimationFrame(animationFrameId);
+                    canvas.remove();
+                }
+            }
+
+            update();
+        }
+
+        // Timeline Drag Implementation
+        let isDragging = false;
+        let dragProjIdx = null;
+        let dragContainer = null;
+        let stepElements = [];
+        let stepsX = [];
+        let currentClosestIdx = -1;
+
+        function initTimelineDrag(event, projIdx) {
+            // Only left clicks
+            if (event.button !== 0) return;
+            
+            isDragging = true;
+            dragProjIdx = projIdx;
+            
+            // Find container
+            dragContainer = event.target.closest('.timeline-steps-container');
+            stepElements = Array.from(dragContainer.querySelectorAll('.timeline-step'));
+            
+            // Calculate step horizontal positions
+            const containerRect = dragContainer.getBoundingClientRect();
+            stepsX = stepElements.map(el => {
+                const rect = el.getBoundingClientRect();
+                return rect.left + rect.width / 2 - containerRect.left;
+            });
+
+            // Find current active index
+            currentClosestIdx = stepElements.findIndex(el => el.classList.contains('key-highlight'));
+
+            // Style body to grabbing
+            document.body.style.cursor = 'grabbing';
+            document.body.style.userSelect = 'none';
+            
+            // Add pointer listeners for smooth dragging on all platforms
+            window.addEventListener('pointermove', handleTimelinePointerMove);
+            window.addEventListener('pointerup', endTimelineDrag);
+            
+            event.target.style.cursor = 'grabbing';
+            event.stopPropagation();
+            event.preventDefault();
+        }
+
+        function handleTimelinePointerMove(event) {
+            if (!isDragging || !dragContainer) return;
+
+            const containerRect = dragContainer.getBoundingClientRect();
+            const relX = event.clientX - containerRect.left;
+
+            // Find closest step index based on cursor X coordinate
+            let closestIdx = 0;
+            let minDiff = Infinity;
+            
+            stepsX.forEach((x, idx) => {
+                const diff = Math.abs(relX - x);
+                if (diff < minDiff) {
+                    minDiff = diff;
+                    closestIdx = idx;
+                }
+            });
+
+            if (closestIdx !== currentClosestIdx && closestIdx >= 0 && closestIdx < stepElements.length) {
+                currentClosestIdx = closestIdx;
+                
+                // Visual feedback: update the DOM classes dynamically during dragging
+                stepElements.forEach((el, sIdx) => {
+                    el.classList.remove('key-highlight', 'completed-stage', 'future-stage', 'stage-design', 'stage-it', 'stage-uat', 'status-on-hold-timeline');
+                    
+                    const stage = el.dataset.stage;
+                    if (sIdx === closestIdx) {
+                        el.classList.add('key-highlight');
+                        if (stage === 'Design') el.classList.add('stage-design');
+                        else if (stage === 'IT') el.classList.add('stage-it');
+                        else if (stage === 'UAT') el.classList.add('stage-uat');
+                    } else if (sIdx < closestIdx) {
+                        el.classList.add('completed-stage');
+                    } else {
+                        el.classList.add('future-stage');
+                    }
+                });
+            }
+        }
+
+        function endTimelineDrag(event) {
+            if (!isDragging) return;
+            
+            isDragging = false;
+            document.body.style.cursor = '';
+            document.body.style.userSelect = '';
+            
+            window.removeEventListener('pointermove', handleTimelinePointerMove);
+            window.removeEventListener('pointerup', endTimelineDrag);
+            
+            if (dragProjIdx !== null && currentClosestIdx !== -1 && stepElements[currentClosestIdx]) {
+                const stageName = stepElements[currentClosestIdx].dataset.stage;
+                updateProjectStage(dragProjIdx, stageName);
+            }
+            
+            dragProjIdx = null;
+            dragContainer = null;
+            stepElements = [];
+            currentClosestIdx = -1;
+        }
+
+        window.onload = function() {
+            renderDashboard();
+        };
+    </script>
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+</head>
+<body>
+    <div class="dashboard-header">
+        <div class="dashboard-header-text">
+            <h1>APO BPR RAD Portfolio Dashboard</h1>
+            <p>FY26 Project Milestones & Progress Tracking (Shanghai Procurement & Operations) <span style="opacity: 0.75; font-size: 13px; margin-left: 8px;">• Synced: 2026-10-13 10:50:07</span></p>
+        </div>
+        <label class="filter-toggle-container" for="completed-toggle">
+            <input type="checkbox" id="completed-toggle" onchange="renderDashboard()" checked>
+            Show Completed Projects
+        </label>
+    </div>
+
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="label" style="border-left: 3px solid var(--text-interactive); padding-left: 8px;">Total Program</div>
+            <div class="value" id="kpi-total">61</div>
+        </div>
+        <div class="stat-card">
+            <div class="label" style="border-left: 3px solid var(--status-progress); padding-left: 8px;">In Progress</div>
+            <div class="value" id="kpi-progress" style="color: var(--status-progress);">25</div>
+        </div>
+        <div class="stat-card">
+            <div class="label" style="border-left: 3px solid var(--status-hold); padding-left: 8px;">On Hold</div>
+            <div class="value" id="kpi-hold" style="color: var(--status-hold);">0</div>
+        </div>
+        <div class="stat-card">
+            <div class="label" style="border-left: 3px solid var(--status-complete); padding-left: 8px;">Completed (Recent)</div>
+            <div class="value" id="kpi-completed" style="color: var(--status-complete);">31</div>
+        </div>
+    </div>
+
+    <!-- ROI Chart Container -->
+    <div id="roi-chart-container" style="display: none; padding: 20px; background: var(--bg-card); border-radius: 16px; margin-bottom: 24px; box-shadow: var(--shadow-sm); border: 1px solid var(--border-subtle); width: 100%; height: 400px;"></div>
+    </div>
+
+    <!-- Interactive Apple-style Control Bar -->
+    <div class="control-bar">
+        <div class="control-bar-left">
+            <button class="tab-btn active" onclick="filterSheet('all', this)">All Portfolios</button>
+            <button class="tab-btn" onclick="filterSheet('new_enhancement', this)">New & Enhancement</button>
+            <button class="tab-btn" onclick="filterSheet('genai_rpa', this)">GenAI & RPA</button>
+            <button class="tab-btn" onclick="filterSheet('rollout', this)">Rollout</button>
+            <button class="tab-btn" onclick="filterSheet('csf', this)">CSF</button>
+        </div>
+        <div class="control-bar-right">
+            <button class="action-btn" onclick="showAddProjectModal()" title="Add a new project to this portfolio" style="background-color: var(--status-complete); margin-right: 4px;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                Add Project
+            </button>
+            <button class="action-btn secondary" onclick="resetToDefault()" title="Sync with latest server data / Revert manual edits">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><polyline points="3 3 3 8 7 8"></polyline></svg>
+                Sync / Reset
+            </button>
+        </div>
+    </div>
+
+    <!-- Add Project Modal -->
+    <div id="add-project-modal" class="modal-overlay" onclick="if(event.target === this) closeAddProjectModal()">
+        <div class="modal-drawer">
+            <div class="modal-header">
+                <h2>Add New Project</h2>
+                <button class="close-drawer-btn" onclick="closeAddProjectModal()">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                </button>
+            </div>
+            <form id="add-project-form" onsubmit="handleAddProject(event)">
+                <div class="form-grid">
+                    <div class="form-field full-width">
+                        <label for="new-project-name">Project Name</label>
+                        <input type="text" id="new-project-name" placeholder="e.g. Apollo Supply Chain Optimizer" required>
+                    </div>
+                    <div class="form-field">
+                        <label for="new-project-sheet">Portfolio Sheet</label>
+                        <select id="new-project-sheet" required>
+                            <option value="New & Enhancement">New & Enhancement</option>
+                            <option value="GenAI & RPA">GenAI & RPA</option>
+                            <option value="Rollout">Rollout</option>
+                            <option value="CSF">CSF</option>
+                        </select>
+                    </div>
+                    <div class="form-field">
+                        <label for="new-project-track">Track Tag</label>
+                        <input type="text" id="new-project-track" placeholder="e.g. Logistics, CSDM, MD" required>
+                    </div>
+                    <div class="form-field">
+                        <label for="new-project-pm">Project Manager (PM)</label>
+                        <input type="text" id="new-project-pm" placeholder="e.g. Wayne Wang">
+                    </div>
+                    <div class="form-field">
+                        <label for="new-project-dev">Developer (Dev)</label>
+                        <input type="text" id="new-project-dev" placeholder="e.g. Jack, Zoya">
+                    </div>
+                    <div class="form-field">
+                        <label for="new-project-status-detail">HL Status Details</label>
+                        <input type="text" id="new-project-status-detail" placeholder="e.g. DEV IN PROGRESS, UAT 7/20" required>
+                    </div>
+                    <div class="form-field">
+                        <label for="new-project-callout">Scoping/Callout Note</label>
+                        <input type="text" id="new-project-callout" placeholder="e.g. Scope, constraints, key parameters">
+                    </div>
+                    
+                    <div class="form-field full-width" style="margin-top: 8px; border-top: 1px solid var(--border-secondary); padding-top: 12px;">
+                        <label style="color: var(--text-primary); font-size: 13px;">Timeline Milestones (Optional Weeks)</label>
+                    </div>
+                    <div class="form-field">
+                        <label for="new-project-req">Request (Requirements)</label>
+                        <input type="text" id="new-project-req" placeholder="e.g. Jun W4">
+                    </div>
+                    <div class="form-field">
+                        <label for="new-project-design">Design</label>
+                        <input type="text" id="new-project-design" placeholder="e.g. Jul W2">
+                    </div>
+                    <div class="form-field">
+                        <label for="new-project-dev">Development</label>
+                        <input type="text" id="new-project-dev" placeholder="e.g. Aug W1">
+                    </div>
+                    <div class="form-field">
+                        <label for="new-project-it">IT testing</label>
+                        <input type="text" id="new-project-it" placeholder="e.g. Sep W2">
+                    </div>
+                    <div class="form-field">
+                        <label for="new-project-uat">UAT</label>
+                        <input type="text" id="new-project-uat" placeholder="e.g. Oct W1">
+                    </div>
+                    <div class="form-field">
+                        <label for="new-project-golive">Go-live</label>
+                        <input type="text" id="new-project-golive" placeholder="e.g. Oct W3">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="action-btn secondary" onclick="closeAddProjectModal()">Cancel</button>
+                    <button type="submit" class="action-btn">Add Project</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Delete Project Confirmation Modal -->
+    <div id="delete-confirm-modal" class="modal-overlay" onclick="if(event.target === this) closeDeleteModal()">
+        <div class="modal-drawer" style="max-width: 420px; padding: 20px; text-align: center;">
+            <div class="modal-header" style="justify-content: center; border-bottom: none; margin-bottom: 8px;">
+                <h2 style="color: #FF3B30; font-size: 19px;">Delete Project?</h2>
+            </div>
+            <p id="delete-confirm-text" style="color: var(--text-secondary); font-size: 14px; line-height: 1.5; margin: 0 0 24px 0; padding: 0 10px;"></p>
+            <div class="modal-footer" style="justify-content: center; gap: 12px; border-top: none; padding-top: 0;">
+                <button type="button" class="action-btn secondary" onclick="closeDeleteModal()" style="padding: 8px 18px; border-radius: 20px;">Cancel</button>
+                <button type="button" class="action-btn" onclick="executeDeleteProject()" style="background-color: #FF3B30; padding: 8px 18px; border-radius: 20px;">Delete</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Reset Confirmation Modal -->
+    <div id="reset-confirm-modal" class="modal-overlay" onclick="if(event.target === this) closeResetModal()">
+        <div class="modal-drawer" style="max-width: 420px; padding: 20px; text-align: center;">
+            <div class="modal-header" style="justify-content: center; border-bottom: none; margin-bottom: 8px;">
+                <h2 style="color: #FF9500; font-size: 19px;">Revert Changes?</h2>
+            </div>
+            <p style="color: var(--text-secondary); font-size: 14px; line-height: 1.5; margin: 0 0 24px 0; padding: 0 10px;">Are you sure you want to revert all changes to the original Excel data? All manual edits, newly added projects, and timeline updates will be permanently lost.</p>
+            <div class="modal-footer" style="justify-content: center; gap: 12px; border-top: none; padding-top: 0;">
+                <button type="button" class="action-btn secondary" onclick="closeResetModal()" style="padding: 8px 18px; border-radius: 20px;">Cancel</button>
+                <button type="button" class="action-btn" onclick="executeResetToDefault()" style="background-color: #FF9500; padding: 8px 18px; border-radius: 20px;">Revert Data</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Portfolio Tables Container -->
+    <div id="sheet-newenhancement" class="sheet-section" style="display: none;"></div>
+    <div id="sheet-genairpa" class="sheet-section" style="display: none;"></div>
+    <div id="sheet-rollout" class="sheet-section" style="display: none;"></div>
+    <div id="sheet-csf" class="sheet-section" style="display: none;"></div>
+
+    <!-- Toast Saved Notification -->
+    <div id="save-toast" class="toast-notification">Changes saved to local storage</div>
+</body>
+</html>
